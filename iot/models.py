@@ -69,9 +69,9 @@ class ConversionFormula(models.Model):
 
     )
 
-    def prepare_formula(self, value):
-        formula = self.formula % value
-        return self.DECIMAL_REGEX.sub(r'Decimal(\1)', formula)
+    def prepare_formula(self, *args):
+        formula = self.formula % args
+        return self.DECIMAL_REGEX.sub(r"Decimal('\1')", formula)
 
     def convert_precisely(self, value):
         return eval(self.prepare_formula(value))
