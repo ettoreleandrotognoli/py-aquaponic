@@ -1,3 +1,4 @@
 dj-database-url
 Django
 pytz
+jsonfield
