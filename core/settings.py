@@ -11,8 +11,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 from distutils.util import strtobool
-import dj_database_url
 
+import dj_database_url
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -112,7 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = os.environ.get('TIMEZONE', 'UTC')
 
 USE_I18N = True
 
