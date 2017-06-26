@@ -2,3 +2,8 @@ dj-database-url
 Django
 pytz
 jsonfield
+djangorestframework
+markdown
+django-filter
+coreapi
+pygments

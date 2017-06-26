@@ -1,4 +1,5 @@
 from decimal import Decimal
+from uuid import uuid4 as unique
 
 import re
 from django.db import models
@@ -22,6 +23,9 @@ class Magnitude(models.Model):
         null=True,
         blank=True,
     )
+
+    def __str__(self):
+        return self.name
 
 
 class MeasureUnit(models.Model):
@@ -48,6 +52,9 @@ class MeasureUnit(models.Model):
         Magnitude,
         related_name='measures_units'
     )
+
+    def __str__(self):
+        return '%s (%s)' % (self.name, self.symbol)
 
 
 class ConversionFormulaQuerySet(models.QuerySet):
@@ -86,6 +93,9 @@ class ConversionFormula(models.Model):
     def convert_fast(self, value) -> float:
         return eval(self.formula % value)
 
+    def __str__(self):
+        return '%s ->  %s' % tuple(map(str, (self.from_unit, self.to_unit)))
+
 
 class Position(models.Model):
     class Meta:
@@ -103,27 +113,8 @@ class Position(models.Model):
         verbose_name=_('Altitude'),
     )
 
-
-class Sensor(models.Model):
-    class Meta:
-        verbose_name = _('Sensor')
-
-    name = models.CharField(
-        max_length=255,
-        unique=True,
-    )
-
-    magnitude = models.ForeignKey(
-        Magnitude,
-        related_name='sensors',
-    )
-
-    position = models.OneToOneField(
-        Position,
-        related_name='sensor',
-        null=True,
-        blank=True
-    )
+    def __str__(self) -> str:
+        return '%f° %f° %f' % (self.latitude, self.longitude, self.altitude)
 
 
 class SensorData(models.Model):
@@ -135,20 +126,20 @@ class SensorData(models.Model):
     )
 
     sensor = models.ForeignKey(
-        Sensor,
-        related_name='datas',
+        'Sensor',
+        related_name='data',
     )
 
     measure_unit = models.ForeignKey(
-        MeasureUnit,
-        related_name='datas',
+        'MeasureUnit',
+        related_name='data',
     )
 
     position = models.ForeignKey(
-        Position,
+        'Position',
         null=True,
         blank=True,
-        related_name='datas',
+        related_name='data',
     )
 
     value = JSONField(
@@ -158,3 +149,57 @@ class SensorData(models.Model):
     raw = JSONField(
         null=True,
     )
+
+    def __str__(self):
+        return '%s %s' % map(str, (self.value, self.measure_unit))
+
+
+class Sensor(models.Model):
+    class Meta:
+        verbose_name = _('Sensor')
+
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+    )
+
+    magnitude = models.ForeignKey(
+        'Magnitude',
+        related_name='sensors',
+    )
+
+    measure_unit = models.ForeignKey(
+        'MeasureUnit',
+        related_name='sensors',
+        null=True,
+        blank=True,
+    )
+
+    position = models.OneToOneField(
+        'Position',
+        related_name='sensor',
+        null=True,
+        blank=True
+    )
+
+    endpoint = models.CharField(
+        max_length=255,
+        unique=True,
+        default=unique
+    )
+
+    def init_data(self, **kwargs) -> SensorData:
+        kwargs['sensor'] = self
+        kwargs['time'] = kwargs.get('time', timezone.now())
+        kwargs['position'] = kwargs.get('position', self.position)
+        kwargs['measure_unit'] = kwargs.get('measure_unit', self.measure_unit)
+        data = SensorData(**kwargs)
+        return data
+
+    def push_data(self, **kwargs) -> SensorData:
+        data = self.init_data(**kwargs)
+        data.save()
+        return data
+
+    def __str__(self):
+        return '%s (%s)' % (self.name, self.magnitude.name)

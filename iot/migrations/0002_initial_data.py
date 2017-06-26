@@ -74,7 +74,7 @@ def forwards_func(apps, schema_editor):
 
     electric_current = Magnitude.objects.get(name='electric current')
     MeasureUnit.objects.using(db_alias).bulk_create([
-        MeasureUnit(name='amper', symbol='A', magnitude=electric_current)
+        MeasureUnit(name='ampere', symbol='A', magnitude=electric_current)
     ])
 
     frequency = Magnitude.objects.get(name='frequency')
