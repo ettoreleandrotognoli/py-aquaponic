@@ -1,5 +1,6 @@
-import re
 from decimal import Decimal
+
+import re
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -49,11 +50,17 @@ class MeasureUnit(models.Model):
     )
 
 
+class ConversionFormulaQuerySet(models.QuerySet):
+    pass
+
+
 class ConversionFormula(models.Model):
     DECIMAL_REGEX = re.compile(r'(\d+(.\d+)?)')
 
     class Meta:
         verbose_name = _('Conversion Formula')
+
+    objects = ConversionFormulaQuerySet.as_manager()
 
     from_unit = models.ForeignKey(
         MeasureUnit,
@@ -69,14 +76,14 @@ class ConversionFormula(models.Model):
 
     )
 
-    def prepare_formula(self, *args):
+    def prepare_formula(self, *args) -> str:
         formula = self.formula % args
         return self.DECIMAL_REGEX.sub(r"Decimal('\1')", formula)
 
-    def convert_precisely(self, value):
+    def convert_precisely(self, value) -> Decimal:
         return eval(self.prepare_formula(value))
 
-    def convert_fast(self, value):
+    def convert_fast(self, value) -> float:
         return eval(self.formula % value)
 
 
