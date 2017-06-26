@@ -1,8 +1,14 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.serializers import ValidationError
 
+import operator
 from collections import Iterable
 from django.conf.urls import url
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from functools import reduce
 
 
 def make_url(urlpatterns, default_decorator=[]) -> type:
@@ -36,3 +42,35 @@ def make_url(urlpatterns, default_decorator=[]) -> type:
             return view
 
     return URL
+
+
+class MultipleFieldLookupMixin(object):
+    def get_object(self):
+        queryset = self.get_queryset()
+        queryset = self.filter_queryset(queryset)
+        queryset_filter = {}
+        fields = [f for f in self.lookup_field if f in self.kwargs]
+        for field in fields:
+            queryset_filter[field] = self.kwargs[field]
+        q = reduce(operator.or_, (Q(x) for x in queryset_filter.items()))
+        return get_object_or_404(queryset, q)
+
+
+class ValidateOnSaveMixin(object):
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super(ValidateOnSaveMixin, self).save(*args, **kwargs)
+
+
+class TrapDjangoValidationErrorMixin(object):
+    def perform_create(self, serializer):
+        try:
+            super(TrapDjangoValidationErrorMixin, self).perform_create(serializer)
+        except DjangoValidationError as detail:
+            raise ValidationError(detail.message_dict)
+
+    def perform_update(self, serializer):
+        try:
+            instance = serializer.save()
+        except DjangoValidationError as detail:
+            raise ValidationError(detail.message_dict)

@@ -2,8 +2,11 @@ from decimal import Decimal
 from uuid import uuid4 as unique
 
 import re
+from core.utils import ValidateOnSaveMixin
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
 
@@ -117,7 +120,7 @@ class Position(models.Model):
         return '%f° %f° %f' % (self.latitude, self.longitude, self.altitude)
 
 
-class SensorData(models.Model):
+class SensorData(ValidateOnSaveMixin, models.Model):
     class Meta:
         verbose_name = _('Sensor Data')
 
@@ -150,11 +153,16 @@ class SensorData(models.Model):
         null=True,
     )
 
+    def clean(self):
+        if self.measure_unit.magnitude != self.sensor.magnitude:
+            raise ValidationError(ugettext('measure unit magnitude and sensor magnitude are different'))
+        return super(SensorData, self).clean()
+
     def __str__(self):
         return '%s %s' % map(str, (self.value, self.measure_unit))
 
 
-class Sensor(models.Model):
+class Sensor(ValidateOnSaveMixin, models.Model):
     class Meta:
         verbose_name = _('Sensor')
 
@@ -185,8 +193,18 @@ class Sensor(models.Model):
     endpoint = models.CharField(
         max_length=255,
         unique=True,
-        default=unique
+        default=unique,
+        blank=True,
     )
+
+    def clean(self):
+        if self.measure_unit.magnitude != self.magnitude:
+            error_message = ugettext('measure unit magnitude and magnitude are different')
+            raise ValidationError({
+                'magnitude': error_message,
+                'measure_unit': error_message,
+            })
+        return super(SensorData, self).clean()
 
     def init_data(self, **kwargs) -> SensorData:
         kwargs['sensor'] = self
