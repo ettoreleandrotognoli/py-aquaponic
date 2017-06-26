@@ -91,6 +91,8 @@ class SensorDetailView(MultipleFieldLookupMixin,
     }
 
     def get_serializer_class(self):
+        if not self.request:
+            return self.serializer_class
         return self.serializers.get(self.request.method, self.serializer_class)
 
 
@@ -108,7 +110,7 @@ class SensorViewMixin(object):
         serializer.save(sensor=self.sensor)
 
 
-@URL('^sensor/(?P<endpoint>[^/]+)/data/$', name='sensor-data')
-@URL('^sensor/(?P<pk>[0-9]+)/data/$', name='sensor-data')
+@URL('^sensor-data/(?P<endpoint>[^/]+)/$', name='sensor-data')
+@URL('^sensor-data/(?P<pk>[0-9]+)/$', name='sensor-data')
 class SensorDataView(TrapDjangoValidationErrorMixin, SensorViewMixin, ListCreateAPIView):
     serializer_class = SensorDataSerializer
