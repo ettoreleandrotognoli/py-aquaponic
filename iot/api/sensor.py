@@ -68,7 +68,7 @@ class SensorSerializer(ModelSerializer):
 class SensorDataSerializer(ModelSerializer):
     class Meta:
         model = SensorData
-        fields = '__all__'
+        exclude = ['sensor']
 
 
 @URL('^sensor/$', name='sensor-list')
@@ -94,15 +94,21 @@ class SensorDetailView(MultipleFieldLookupMixin,
         return self.serializers.get(self.request.method, self.serializer_class)
 
 
-@URL('^sensor/(?P<endpoint>[^/]+)/data/$', name='sensor-data')
-@URL('^sensor/(?P<pk>[0-9]+)/data/$', name='sensor-data')
-class SensorDataView(TrapDjangoValidationErrorMixin, ListCreateAPIView):
+class SensorViewMixin(object):
     sensor = None
-    serializer_class = SensorDataSerializer
 
     def dispatch(self, request, *args, **kwargs):
         self.sensor = get_object_or_404(Sensor, **self.kwargs)
-        return super(SensorDataView, self).dispatch(request, *args, **kwargs)
+        return super(SensorViewMixin, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         return SensorData.objects.filter(sensor=self.sensor).all()
+
+    def perform_create(self, serializer):
+        serializer.save(sensor=self.sensor)
+
+
+@URL('^sensor/(?P<endpoint>[^/]+)/data/$', name='sensor-data')
+@URL('^sensor/(?P<pk>[0-9]+)/data/$', name='sensor-data')
+class SensorDataView(TrapDjangoValidationErrorMixin, SensorViewMixin, ListCreateAPIView):
+    serializer_class = SensorDataSerializer

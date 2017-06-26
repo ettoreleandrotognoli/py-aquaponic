@@ -155,7 +155,8 @@ class SensorData(ValidateOnSaveMixin, models.Model):
 
     def clean(self):
         if self.measure_unit.magnitude != self.sensor.magnitude:
-            raise ValidationError(ugettext('measure unit magnitude and sensor magnitude are different'))
+            error_message = ugettext('measure unit magnitude and sensor magnitude are different')
+            raise ValidationError({'measure_unit': error_message})
         return super(SensorData, self).clean()
 
     def __str__(self):
@@ -204,7 +205,7 @@ class Sensor(ValidateOnSaveMixin, models.Model):
                 'magnitude': error_message,
                 'measure_unit': error_message,
             })
-        return super(SensorData, self).clean()
+        return super(Sensor, self).clean()
 
     def init_data(self, **kwargs) -> SensorData:
         kwargs['sensor'] = self
