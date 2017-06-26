@@ -16,6 +16,11 @@ def forwards_func(apps, schema_editor):
         Magnitude(name='speed', description=''),
         Magnitude(name='angular speed', description=''),
         Magnitude(name='acidity', description=''),
+        Magnitude(name='electric tension', description=''),
+        Magnitude(name='electric resistance', description=''),
+        Magnitude(name='electric current', description=''),
+        Magnitude(name='frequency', description=''),
+        Magnitude(name='light', description=''),
     ])
 
     MeasureUnit = apps.get_model('iot', 'MeasureUnit')
@@ -55,6 +60,31 @@ def forwards_func(apps, schema_editor):
     acidity = Magnitude.objects.using(db_alias).get(name='acidity')
     MeasureUnit.objects.using(db_alias).bulk_create([
         MeasureUnit(name='potential of hydrogen', symbol='pH', magnitude=acidity)
+    ])
+
+    electric_tension = Magnitude.objects.get(name='electric tension')
+    MeasureUnit.objects.using(db_alias).bulk_create([
+        MeasureUnit(name='volts', symbol='V', magnitude=electric_tension)
+    ])
+
+    electric_resistance = Magnitude.objects.get(name='electric resistance')
+    MeasureUnit.objects.using(db_alias).bulk_create([
+        MeasureUnit(name='ohm', symbol='Ω', magnitude=electric_resistance)
+    ])
+
+    electric_current = Magnitude.objects.get(name='electric current')
+    MeasureUnit.objects.using(db_alias).bulk_create([
+        MeasureUnit(name='amper', symbol='A', magnitude=electric_current)
+    ])
+
+    frequency = Magnitude.objects.get(name='frequency')
+    MeasureUnit.objects.using(db_alias).bulk_create([
+        MeasureUnit(name='hertz', symbol='Hz', magnitude=frequency)
+    ])
+
+    light = Magnitude.objects.using(db_alias).get(name='light')
+    MeasureUnit.objects.using(db_alias).bulk_create([
+        MeasureUnit(name='luminous flux', symbol='lm', magnitude=light)
     ])
 
     ConversionFormula = apps.get_model('iot', 'ConversionFormula')
