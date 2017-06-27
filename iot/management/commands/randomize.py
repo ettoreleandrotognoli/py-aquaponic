@@ -57,7 +57,16 @@ class Command(BaseCommand):
             help='Time interval in seconds'
         )
 
-    def _handle(self, sensor_name, magnitude_name, unit_name, min_value, max_value, limit, interval, **kwargs):
+        parser.add_argument(
+            '--low-pass',
+            dest='low_pass',
+            default=0,
+            help='Low pass filter',
+            type=float
+        )
+
+    def _handle(self, sensor_name, magnitude_name, unit_name, min_value, max_value, limit, interval, low_pass,
+                **kwargs):
         magnitude = Magnitude.objects.get(name=magnitude_name)
         unit = MeasureUnit.objects.get(name=unit_name)
         defaults = {'measure_unit': unit, 'magnitude': magnitude}
@@ -65,8 +74,11 @@ class Command(BaseCommand):
         if created:
             self.stdout.write(self.style.SUCCESS('Sensor %s created' % sensor_name))
         time = timezone.now() - timezone.timedelta(seconds=interval * limit)
+        value = random.uniform(min_value, max_value)
         for x in range(limit):
-            sensor.push_data(time=time, value=random.uniform(min_value, max_value))
+            new_value = random.uniform(min_value, max_value)
+            value = (value * low_pass + new_value) / (low_pass + 1)
+            sensor.push_data(time=time, value=value)
             time += timezone.timedelta(seconds=interval)
 
     def handle(self, *args, **options):
