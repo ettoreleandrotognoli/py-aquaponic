@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'iot',
     'aquaponic',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -140,4 +141,11 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.OrderingFilter',
     )
+}
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'asgiref.inmemory.ChannelLayer',
+        'ROUTING': 'core.routing.channel_routing',
+    },
 }
