@@ -2,8 +2,8 @@ from decimal import Decimal
 from uuid import uuid4 as unique
 
 import re
-from core.utils import DecimalField
-from core.utils import ValidateOnSaveMixin
+from core.utils.models import DecimalField
+from core.utils.models import ValidateOnSaveMixin
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -207,6 +207,11 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         blank=True,
     )
 
+    is_virtual = models.BooleanField(
+        default=False,
+        verbose_name=_('It is a virtual sensor')
+    )
+
     def clean(self):
         if self.measure_unit.magnitude != self.magnitude:
             error_message = ugettext('measure unit magnitude and magnitude are different')
@@ -231,6 +236,31 @@ class Sensor(ValidateOnSaveMixin, models.Model):
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.magnitude.name)
+
+
+class SensorFusion(models.Model):
+    class Meta:
+        verbose_name = _('Sensor Fusion')
+
+    inputs = models.ManyToManyField(
+        'Sensor',
+        related_name='consumers',
+    )
+
+    output = models.OneToOneField(
+        'Sensor',
+        related_name='origin',
+        verbose_name=_('Output sensor'),
+        help_text=_('Output virtual sensor'),
+    )
+
+    fusion_strategy = models.CharField(
+        max_length=255,
+        verbose_name=_('Fusion strategy')
+    )
+
+    def input_changed(self, sensor_data: SensorData):
+        raise NotImplementedError()
 
 
 class Actuator(models.Model):
@@ -263,10 +293,21 @@ class Actuator(models.Model):
         blank=True,
     )
 
+    def set_value(self, value):
+        raise NotImplementedError()
+
+    def get_value(self):
+        raise NotImplementedError()
+
+    value = property(get_value, set_value)
+
+    def __str__(self):
+        return self.name
+
 
 class PID(models.Model):
     class Meta:
-        verbose_name = _('Actuator')
+        verbose_name = _('PID')
 
     name = models.CharField(
         max_length=255,
@@ -274,25 +315,37 @@ class PID(models.Model):
     )
 
     active = models.BooleanField(
-
+        default=True
     )
 
     input = models.ForeignKey(
-
+        Sensor,
+        related_name='pid_controllers'
     )
 
     output = models.ForeignKey(
+        Actuator,
+        related_name='pid_controllers'
+    )
+
+    target = DecimalField(
 
     )
 
-    p = DecimalField(
+    kp = DecimalField(
 
     )
 
-    i = DecimalField(
+    ki = DecimalField(
 
     )
 
-    d = DecimalField(
+    kd = DecimalField(
 
     )
+
+    def input_changed(self, sensor_data: SensorData):
+        raise NotImplementedError()
+
+    def __str__(self):
+        return self.name

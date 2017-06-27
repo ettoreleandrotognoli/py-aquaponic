@@ -51,3 +51,26 @@ class ActuatorAdmin(admin.ModelAdmin):
         'description',
         'endpoint',
     ]
+
+
+@admin.register(models.PID)
+class PIDAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'active', 'input', 'output', 'kp', 'ki', 'kd']
+    list_filter = ['active', 'input__magnitude']
+    search_fields = [
+        'input__name',
+        'output__name',
+    ]
+
+
+@admin.register(models.SensorFusion)
+class SensorFusionAdmin(admin.ModelAdmin):
+    list_display = ['output', 'fusion_strategy']
+    list_filter = [
+        'output__magnitude',
+        'fusion_strategy',
+    ]
+    search_fields = [
+        'inputs__name',
+        'output__name',
+    ]
