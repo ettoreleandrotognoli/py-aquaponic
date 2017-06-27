@@ -41,3 +41,13 @@ class ConversionFormulaAdmin(admin.ModelAdmin):
         'to_unit__symbol',
         'from_unit__name',
     ]
+
+
+@admin.register(models.Actuator)
+class ActuatorAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'endpoint']
+    search_fields = [
+        'name',
+        'description',
+        'endpoint',
+    ]

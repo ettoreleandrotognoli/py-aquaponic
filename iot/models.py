@@ -2,10 +2,10 @@ from decimal import Decimal
 from uuid import uuid4 as unique
 
 import re
-from core.utils import ValidateOnSaveMixin
 from core.utils import DecimalField
-from django.db import models
+from core.utils import ValidateOnSaveMixin
 from django.core.exceptions import ValidationError
+from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy as _
@@ -172,6 +172,13 @@ class Sensor(ValidateOnSaveMixin, models.Model):
     name = models.CharField(
         max_length=255,
         unique=True,
+        verbose_name=_('Name'),
+    )
+
+    description = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name=_('Description'),
     )
 
     magnitude = models.ForeignKey(
@@ -224,3 +231,68 @@ class Sensor(ValidateOnSaveMixin, models.Model):
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.magnitude.name)
+
+
+class Actuator(models.Model):
+    class Meta:
+        verbose_name = _('Actuator')
+
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name=_('Name')
+    )
+
+    description = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name=_('Description')
+    )
+
+    position = models.OneToOneField(
+        'Position',
+        related_name='actuator',
+        null=True,
+        blank=True
+    )
+
+    endpoint = models.CharField(
+        max_length=255,
+        unique=True,
+        default=unique,
+        blank=True,
+    )
+
+
+class PID(models.Model):
+    class Meta:
+        verbose_name = _('Actuator')
+
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+    )
+
+    active = models.BooleanField(
+
+    )
+
+    input = models.ForeignKey(
+
+    )
+
+    output = models.ForeignKey(
+
+    )
+
+    p = DecimalField(
+
+    )
+
+    i = DecimalField(
+
+    )
+
+    d = DecimalField(
+
+    )
