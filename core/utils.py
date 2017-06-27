@@ -3,10 +3,11 @@ from __future__ import unicode_literals
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.serializers import ValidationError
 
+import decimal
 import operator
 from collections import Iterable
 from django.conf.urls import url
-from django.db.models import Q
+from django.db.models import Q, FloatField
 from django.shortcuts import get_object_or_404
 from functools import reduce
 
@@ -74,3 +75,26 @@ class TrapDjangoValidationErrorMixin(object):
             instance = serializer.save()
         except DjangoValidationError as detail:
             raise ValidationError(detail.message_dict)
+
+
+class DecimalField(FloatField):
+    def __int__(self, *args, **kwargs):
+        super(DecimalField, self).__init__(*args, **kwargs)
+
+    def get_prep_value(self, value):
+        value = super(FloatField, self).get_prep_value(value)
+        if value is None:
+            return None
+        return decimal.Decimal(value)
+
+    def to_python(self, value):
+        if value is None:
+            return value
+        try:
+            return decimal.Decimal(value)
+        except (TypeError, ValueError):
+            raise DjangoValidationError(
+                self.error_messages['invalid'],
+                code='invalid',
+                params={'value': value},
+            )

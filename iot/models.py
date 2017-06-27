@@ -3,6 +3,7 @@ from uuid import uuid4 as unique
 
 import re
 from core.utils import ValidateOnSaveMixin
+from core.utils import DecimalField
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -104,15 +105,15 @@ class Position(models.Model):
     class Meta:
         verbose_name = _('Position')
 
-    latitude = models.FloatField(
+    latitude = DecimalField(
         verbose_name=_('Latitude'),
     )
 
-    longitude = models.FloatField(
+    longitude = DecimalField(
         verbose_name=_('Longitude'),
     )
 
-    altitude = models.FloatField(
+    altitude = DecimalField(
         verbose_name=_('Altitude'),
     )
 
@@ -146,8 +147,7 @@ class SensorData(ValidateOnSaveMixin, models.Model):
         related_name='data',
     )
 
-    value = JSONField(
-
+    value = DecimalField(
     )
 
     raw = JSONField(
