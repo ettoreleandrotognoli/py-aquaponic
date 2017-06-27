@@ -123,6 +123,7 @@ class Position(models.Model):
 class SensorData(ValidateOnSaveMixin, models.Model):
     class Meta:
         verbose_name = _('Sensor Data')
+        ordering = ['-time']
 
     time = models.DateTimeField(
         default=timezone.now
@@ -151,6 +152,7 @@ class SensorData(ValidateOnSaveMixin, models.Model):
 
     raw = JSONField(
         null=True,
+        blank=True
     )
 
     def clean(self):
@@ -160,7 +162,7 @@ class SensorData(ValidateOnSaveMixin, models.Model):
         return super(SensorData, self).clean()
 
     def __str__(self):
-        return '%s %s' % map(str, (self.value, self.measure_unit))
+        return '%s %s' % tuple(map(str, (self.value, self.measure_unit)))
 
 
 class Sensor(ValidateOnSaveMixin, models.Model):

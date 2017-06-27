@@ -10,10 +10,10 @@ class JSONFieldSerializer(FieldSerializer):
         super(JSONFieldSerializer, self).__init__(*args, **kwargs)
 
     def to_representation(self, obj):
-        return json.loads(obj)
+        return obj
 
     def to_internal_value(self, data):
-        return data
+        return json.loads(data)
 
 
 serializer_field_mapping = {

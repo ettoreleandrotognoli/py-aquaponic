@@ -1,10 +1,14 @@
+import pygal
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.serializers import ModelSerializer
 
 from core.utils import make_url, MultipleFieldLookupMixin, TrapDjangoValidationErrorMixin
 from iot.models import Sensor, SensorData, Magnitude, MeasureUnit, Position
+from iot.pygal import PygalViewMixin
 
 urlpatterns = []
 
@@ -114,3 +118,22 @@ class SensorViewMixin(object):
 @URL('^sensor-data/(?P<pk>[0-9]+)/$', name='sensor-data')
 class SensorDataView(TrapDjangoValidationErrorMixin, SensorViewMixin, ListCreateAPIView):
     serializer_class = SensorDataSerializer
+
+
+@URL('^sensor-chart/(?P<endpoint>[^/]+)/$', name='sensor-chart')
+@URL('^sensor-chart/(?P<pk>[0-9]+)/$', name='sensor-chart')
+class SensorChartView(PygalViewMixin, SensorViewMixin, ListAPIView):
+    chart = pygal.DateTimeLine
+    serializer_class = SensorDataSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        result = page or queryset
+        chart = self.get_chart()
+        chart.title = self.sensor.name
+        chart.add(
+            self.sensor.measure_unit.symbol,
+            [(sample.time, sample.value) for sample in result],
+        )
+        return chart.render_django_response()

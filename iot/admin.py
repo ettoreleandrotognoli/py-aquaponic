@@ -21,7 +21,7 @@ class SensorAdmin(admin.ModelAdmin):
 
 @admin.register(models.SensorData)
 class SensorDataAdmin(admin.ModelAdmin):
-    list_display = ['sensor', ]
+    list_display = ['time', 'value', 'sensor', 'measure_unit']
     list_filter = ['sensor', 'measure_unit', ]
 
 
