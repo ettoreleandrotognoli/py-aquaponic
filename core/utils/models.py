@@ -2,9 +2,10 @@
 from __future__ import unicode_literals
 
 import decimal
+from pydoc import locate
 
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db.models import FloatField
+from django.db.models import FloatField, CharField
 
 
 class ValidateOnSaveMixin(object):
@@ -18,7 +19,7 @@ class DecimalField(FloatField):
         super(DecimalField, self).__init__(*args, **kwargs)
 
     def get_prep_value(self, value):
-        value = super(FloatField, self).get_prep_value(value)
+        value = super(DecimalField, self).get_prep_value(value)
         if value is None:
             return None
         return decimal.Decimal(value)

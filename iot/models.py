@@ -1,4 +1,5 @@
 from decimal import Decimal
+from pydoc import locate
 from uuid import uuid4 as unique
 
 import re
@@ -293,11 +294,25 @@ class Actuator(models.Model):
         blank=True,
     )
 
+    strategy = models.CharField(
+        max_length=255,
+        choices=(
+            ('iot.parport.DataPin', _('Parallel Port Pin')),
+        ),
+    )
+
+    strategy_options = JSONField(
+        null=True,
+        default={}
+    )
+
     def set_value(self, value):
-        raise NotImplementedError()
+        device = locate(self.strategy)(**self.strategy_options)
+        return device.set_value(value)
 
     def get_value(self):
-        raise NotImplementedError()
+        device = locate(self.strategy)(**self.strategy_options)
+        return device.get_value()
 
     value = property(get_value, set_value)
 

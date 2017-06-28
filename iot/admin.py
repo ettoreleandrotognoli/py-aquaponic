@@ -14,8 +14,8 @@ class MeasureUnitAdmin(admin.ModelAdmin):
 
 @admin.register(models.Sensor)
 class SensorAdmin(admin.ModelAdmin):
-    list_display = ['name', 'endpoint', 'magnitude', 'measure_unit', ]
-    list_filter = ['magnitude', 'measure_unit', ]
+    list_display = ['name', 'is_virtual', 'endpoint', 'magnitude', 'measure_unit', ]
+    list_filter = ['is_virtual', 'magnitude', 'measure_unit', ]
     search_fields = ['name', 'endpoint']
 
 

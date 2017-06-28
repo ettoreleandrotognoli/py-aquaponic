@@ -9,3 +9,4 @@ coreapi
 pygments
 channels
 pygal
+pyparallel
