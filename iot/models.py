@@ -255,9 +255,13 @@ class SensorFusion(models.Model):
         help_text=_('Output virtual sensor'),
     )
 
-    fusion_strategy = models.CharField(
+    strategy = models.CharField(
         max_length=255,
         verbose_name=_('Fusion strategy')
+    )
+
+    strategy_options = JSONField(
+        default={}
     )
 
     def input_changed(self, sensor_data: SensorData):
@@ -297,7 +301,7 @@ class Actuator(models.Model):
     strategy = models.CharField(
         max_length=255,
         choices=(
-            ('iot.parport.DataPin', _('Parallel Port Pin')),
+            ('iot.actuators.parport.DataPin', _('Parallel Port Pin')),
         ),
     )
 
@@ -318,6 +322,20 @@ class Actuator(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ActuatorData(models.Model):
+    time = models.DateTimeField(
+        default=timezone.now
+    )
+
+    actuator = models.ForeignKey(
+        'Actuator',
+    )
+
+    value = DecimalField(
+
+    )
 
 
 class PID(models.Model):

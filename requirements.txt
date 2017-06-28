@@ -10,3 +10,4 @@ pygments
 channels
 pygal
 pyparallel
+paho-mqtt

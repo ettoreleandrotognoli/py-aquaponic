@@ -45,7 +45,8 @@ class ConversionFormulaAdmin(admin.ModelAdmin):
 
 @admin.register(models.Actuator)
 class ActuatorAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'endpoint']
+    list_display = ['__str__', 'endpoint', 'strategy']
+    list_filter = ['strategy']
     search_fields = [
         'name',
         'description',
