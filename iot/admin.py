@@ -66,10 +66,10 @@ class PIDAdmin(admin.ModelAdmin):
 
 @admin.register(models.SensorFusion)
 class SensorFusionAdmin(admin.ModelAdmin):
-    list_display = ['output', 'fusion_strategy']
+    list_display = ['output', 'strategy']
     list_filter = [
         'output__magnitude',
-        'fusion_strategy',
+        'strategy',
     ]
     search_fields = [
         'inputs__name',
