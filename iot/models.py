@@ -8,6 +8,7 @@ from core.utils.models import ValidateOnSaveMixin
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+from django.utils.timezone import timedelta
 from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
@@ -280,7 +281,8 @@ class SensorFusion(models.Model):
     def input_changed(self, sensor_data: SensorData):
         merger = locate(self.strategy)(**self.strategy_options)
         value, time, measure_unit = merger.merge(sensor_data, self.inputs.all())
-        self.output.push_data(value=value, time=time, measure_unit=measure_unit)
+        if value:
+            self.output.push_data(value=value, time=time, measure_unit=measure_unit)
 
 
 class Actuator(models.Model):
@@ -340,11 +342,11 @@ class Actuator(models.Model):
         device = locate(self.strategy)(**self.strategy_options)
         data = ActuatorData(
             actuator=self,
-            value=value,
+            raw=value,
+            value=device.set_value(value),
             measure_unit=self.measure_unit,
             position=self.position,
         )
-        device.set_value(value)
         data.save()
 
     def get_value(self):
@@ -383,6 +385,11 @@ class ActuatorData(models.Model):
 
     )
 
+    raw = JSONField(
+        null=True,
+        blank=True,
+    )
+
     position = models.ForeignKey(
         'Position',
         null=True,
@@ -413,6 +420,16 @@ class PID(models.Model):
         related_name='pid_controllers'
     )
 
+    error = DecimalField(
+        default=0,
+        null=False,
+    )
+
+    integral = DecimalField(
+        default=0,
+        null=False,
+    )
+
     target = DecimalField(
 
     )
@@ -429,8 +446,23 @@ class PID(models.Model):
 
     )
 
+    def update(self, feedback, interval: timedelta):
+        error = self.target - feedback
+        dt = interval.seconds
+        self.integral += error * dt
+        p = self.kp * error
+        i = self.ki * self.integral
+        if interval > 0:
+            d = self.kd * (error - self.error) / dt
+        else:
+            d = 0
+        self.error = error
+        self.output.set_value(p + i + d)
+
     def input_changed(self, sensor_data: SensorData):
-        raise NotImplementedError()
+        last = self.input.data.exclude(pk=sensor_data.pk).order_by('-time').first()
+        interval = sensor_data.time - last.time if last else 0
+        self.update(sensor_data.value, interval)
 
     def __str__(self):
         return self.name

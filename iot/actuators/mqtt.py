@@ -14,3 +14,4 @@ class MqttDevice(Actuator):
         publish.single(
             **self.kwargs
         )
+        return value

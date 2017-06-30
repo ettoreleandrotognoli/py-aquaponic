@@ -14,7 +14,8 @@ class DataPin(ReadableActuator):
         else:
             data = data & ~(0x01 << self.pin)
         self.parallel.setData(data)
+        return 1 if value else 0
 
     def get_value(self):
         data = self.parallel.getData()
-        return data & (0x01 << self.pin)
+        return 1 if data & (0x01 << self.pin) else 0
