@@ -1,6 +1,6 @@
 import parallel
-from iot.models import Actuator
 from django.core.management.base import BaseCommand
+from iot.models import Actuator
 
 
 class Command(BaseCommand):
