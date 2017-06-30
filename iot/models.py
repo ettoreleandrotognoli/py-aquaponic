@@ -139,6 +139,8 @@ class SensorData(ValidateOnSaveMixin, models.Model):
     measure_unit = models.ForeignKey(
         'MeasureUnit',
         related_name='data',
+        null=True,
+        blank=True,
     )
 
     position = models.ForeignKey(
@@ -157,13 +159,18 @@ class SensorData(ValidateOnSaveMixin, models.Model):
     )
 
     def clean(self):
+        if self.measure_unit_id is None:
+            self.measure_unit = self.sensor.measure_unit
+        if self.position_id is None:
+            self.position = self.sensor.position
         if self.measure_unit.magnitude != self.sensor.magnitude:
             error_message = ugettext('measure unit magnitude and sensor magnitude are different')
             raise ValidationError({'measure_unit': error_message})
         return super(SensorData, self).clean()
 
     def __str__(self):
-        return '%s %s' % tuple(map(str, (self.value, self.measure_unit)))
+
+        return '%s %s' % tuple(map(str, (self.value, self.measure_unit if self.measure_unit_id else '?')))
 
 
 class Sensor(ValidateOnSaveMixin, models.Model):
@@ -310,13 +317,36 @@ class Actuator(models.Model):
         default={}
     )
 
+    magnitude = models.ForeignKey(
+        'Magnitude',
+    )
+
+    measure_unit = models.ForeignKey(
+        'MeasureUnit',
+        null=True,
+        blank=True,
+    )
+
     def set_value(self, value):
         device = locate(self.strategy)(**self.strategy_options)
-        return device.set_value(value)
+        data = ActuatorData(
+            actuator=self,
+            value=value,
+            measure_unit=self.measure_unit,
+            position=self.position,
+        )
+        device.set_value(value)
+        data.save()
 
     def get_value(self):
         device = locate(self.strategy)(**self.strategy_options)
-        return device.get_value()
+        if hasattr(device, 'get_value'):
+            return device.get_value()
+        data = self.data.all().order_by('-time').first()
+        if data:
+            return data.value
+        else:
+            return None
 
     value = property(get_value, set_value)
 
@@ -331,10 +361,23 @@ class ActuatorData(models.Model):
 
     actuator = models.ForeignKey(
         'Actuator',
+        related_name='data',
+    )
+
+    measure_unit = models.ForeignKey(
+        'MeasureUnit',
+        null=True,
+        blank=True
     )
 
     value = DecimalField(
 
+    )
+
+    position = models.ForeignKey(
+        'Position',
+        null=True,
+        blank=True
     )
 
 

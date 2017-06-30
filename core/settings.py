@@ -14,6 +14,7 @@ from distutils.util import strtobool
 
 import dj_database_url
 import os
+import random
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -148,4 +149,8 @@ CHANNEL_LAYERS = {
         'BACKEND': 'asgiref.inmemory.ChannelLayer',
         'ROUTING': 'core.routing.channel_routing',
     },
+}
+
+MOMMY_CUSTOM_FIELDS_GEN = {
+    'core.utils.models.DecimalField': lambda: random.uniform(-50, 50)
 }

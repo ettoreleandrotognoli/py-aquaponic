@@ -2,15 +2,14 @@
 from __future__ import unicode_literals
 
 import decimal
-from pydoc import locate
 
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db.models import FloatField, CharField
+from django.db.models import FloatField
 
 
 class ValidateOnSaveMixin(object):
     def save(self, *args, **kwargs):
-        self.full_clean()
+        super(ValidateOnSaveMixin, self).full_clean()
         return super(ValidateOnSaveMixin, self).save(*args, **kwargs)
 
 

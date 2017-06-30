@@ -1,14 +1,13 @@
 import pygal
+from core.utils.urls import make_url
+from core.utils.views import MultipleFieldLookupMixin, TrapDjangoValidationErrorMixin
 from django.shortcuts import get_object_or_404
+from iot.models import Sensor, SensorData, Magnitude, MeasureUnit, Position
+from iot.pygal import PygalViewMixin
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.serializers import ModelSerializer
-
-from core.utils.urls import make_url
-from core.utils.views import MultipleFieldLookupMixin, TrapDjangoValidationErrorMixin
-from iot.models import Sensor, SensorData, Magnitude, MeasureUnit, Position
-from iot.pygal import PygalViewMixin
 
 urlpatterns = []
 
