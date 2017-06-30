@@ -33,6 +33,7 @@ class Command(BaseCommand):
             dest='limit',
             help='Sample size',
             default=100,
+            type=int,
         )
 
         parser.add_argument(

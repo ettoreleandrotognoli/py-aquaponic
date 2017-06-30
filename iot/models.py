@@ -3,7 +3,6 @@ from pydoc import locate
 from uuid import uuid4 as unique
 
 import re
-from core.utils.models import DecimalField
 from core.utils.models import ValidateOnSaveMixin
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -107,15 +106,15 @@ class Position(models.Model):
     class Meta:
         verbose_name = _('Position')
 
-    latitude = DecimalField(
+    latitude = models.FloatField(
         verbose_name=_('Latitude'),
     )
 
-    longitude = DecimalField(
+    longitude = models.FloatField(
         verbose_name=_('Longitude'),
     )
 
-    altitude = DecimalField(
+    altitude = models.FloatField(
         verbose_name=_('Altitude'),
     )
 
@@ -151,7 +150,7 @@ class SensorData(ValidateOnSaveMixin, models.Model):
         related_name='data',
     )
 
-    value = DecimalField(
+    value = models.FloatField(
     )
 
     raw = JSONField(
@@ -318,6 +317,7 @@ class Actuator(models.Model):
     strategy = models.CharField(
         max_length=255,
         choices=(
+            ('iot.actuators.actuator.NullActuator', _('Null Actuator')),
             ('iot.actuators.parport.DataPin', _('Parallel Port Pin')),
         ),
     )
@@ -381,7 +381,7 @@ class ActuatorData(models.Model):
         blank=True
     )
 
-    value = DecimalField(
+    value = models.FloatField(
 
     )
 
@@ -395,6 +395,9 @@ class ActuatorData(models.Model):
         null=True,
         blank=True
     )
+
+    def __str__(self):
+        return '%s (%f)' % (self.actuator.name, self.value)
 
 
 class PID(models.Model):
@@ -420,29 +423,29 @@ class PID(models.Model):
         related_name='pid_controllers'
     )
 
-    error = DecimalField(
+    error = models.FloatField(
         default=0,
         null=False,
     )
 
-    integral = DecimalField(
+    integral = models.FloatField(
         default=0,
         null=False,
     )
 
-    target = DecimalField(
+    target = models.FloatField(
 
     )
 
-    kp = DecimalField(
+    kp = models.FloatField(
 
     )
 
-    ki = DecimalField(
+    ki = models.FloatField(
 
     )
 
-    kd = DecimalField(
+    kd = models.FloatField(
 
     )
 
@@ -452,7 +455,7 @@ class PID(models.Model):
         self.integral += error * dt
         p = self.kp * error
         i = self.ki * self.integral
-        if interval > 0:
+        if interval.seconds > 0:
             d = self.kd * (error - self.error) / dt
         else:
             d = 0
@@ -462,7 +465,7 @@ class PID(models.Model):
 
     def input_changed(self, sensor_data: SensorData):
         last = self.input.data.exclude(pk=sensor_data.pk).order_by('-time').first()
-        interval = sensor_data.time - last.time if last else 0
+        interval = sensor_data.time - last.time if last else timedelta(seconds=0)
         self.update(sensor_data.value, interval)
 
     def __str__(self):

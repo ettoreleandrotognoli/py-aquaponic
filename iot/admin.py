@@ -54,6 +54,15 @@ class ActuatorAdmin(admin.ModelAdmin):
     ]
 
 
+@admin.register(models.ActuatorData)
+class ActuatorDataAdmin(admin.ModelAdmin):
+    list_display = ['time', 'actuator', 'value', ]
+    list_filter = ['actuator']
+    search_fields = [
+        'actuator__name',
+    ]
+
+
 @admin.register(models.PID)
 class PIDAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'active', 'input', 'output', 'kp', 'ki', 'kd']
