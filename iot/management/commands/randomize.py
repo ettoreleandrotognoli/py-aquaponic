@@ -41,6 +41,7 @@ class Command(BaseCommand):
             dest='min_value',
             default=-50,
             help='Min value',
+            type=float
         )
 
         parser.add_argument(
@@ -48,6 +49,7 @@ class Command(BaseCommand):
             dest='max_value',
             default=50,
             help='Max value',
+            type=float
         )
 
         parser.add_argument(

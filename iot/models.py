@@ -352,12 +352,15 @@ class Actuator(models.Model):
     def get_value(self):
         device = locate(self.strategy)(**self.strategy_options)
         if hasattr(device, 'get_value'):
-            return device.get_value()
+            try:
+                return device.get_value()
+            except NotImplementedError:
+                pass
         data = self.data.all().order_by('-time').first()
         if data:
             return data.value
         else:
-            return None
+            return 0
 
     value = property(get_value, set_value)
 
@@ -413,6 +416,10 @@ class PID(models.Model):
         default=True
     )
 
+    inverse = models.BooleanField(
+        default=False,
+    )
+
     input = models.ForeignKey(
         Sensor,
         related_name='pid_controllers'
@@ -461,7 +468,13 @@ class PID(models.Model):
             d = 0
         self.error = error
         self.save()
-        self.output.set_value(p + i + d)
+        old_value = self.output.get_value()
+        pid = p + i + d
+        if self.inverse:
+            new_value = old_value - pid
+        else:
+            new_value = old_value + pid
+        self.output.set_value(new_value)
 
     def input_changed(self, sensor_data: SensorData):
         last = self.input.data.exclude(pk=sensor_data.pk).order_by('-time').first()

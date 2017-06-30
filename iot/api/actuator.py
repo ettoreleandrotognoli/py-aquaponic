@@ -1,0 +1,138 @@
+import pygal
+from core.utils.urls import make_url
+from core.utils.views import MultipleFieldLookupMixin, TrapDjangoValidationErrorMixin
+from django.shortcuts import get_object_or_404
+from iot.models import Actuator, ActuatorData, Magnitude, MeasureUnit, Position
+from iot.pygal import PygalViewMixin
+from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework.serializers import ModelSerializer
+
+urlpatterns = []
+
+URL = make_url(urlpatterns)
+
+
+class MagnitudeSerializer(ModelSerializer):
+    class Meta:
+        model = Magnitude
+        fields = ['id', 'name']
+
+
+class MeasureUnitSerializer(ModelSerializer):
+    class Meta:
+        model = MeasureUnit
+        fields = ['id', 'name', 'symbol']
+
+
+class PositionSerializer(ModelSerializer):
+    class Meta:
+        model = Position
+        exclude = ['id']
+
+
+class ActuatorDetailSerializer(ModelSerializer):
+    class Meta:
+        model = Actuator
+        fields = '__all__'
+
+    magnitude = MagnitudeSerializer(many=False)
+    measure_unit = MeasureUnitSerializer(many=False)
+    position = PositionSerializer(many=False)
+
+
+class ActuatorSerializer(ModelSerializer):
+    class Meta:
+        model = Actuator
+        fields = '__all__'
+
+    position = PositionSerializer(
+        many=False,
+        read_only=False,
+        required=False,
+    )
+
+    def create(self, validated_data):
+        position = validated_data.get('position', None)
+        if position:
+            position = PositionSerializer().create(position)
+        validated_data['position'] = position
+        return super(ActuatorSerializer, self).create(validated_data)
+
+    def update(self, instance, validated_data):
+        position = validated_data.pop('position', None)
+        if position:
+            position = PositionSerializer().create(position)
+        instance.position = position
+        return super(ActuatorSerializer, self).update(instance, validated_data)
+
+
+class ActuatorDataSerializer(ModelSerializer):
+    class Meta:
+        model = ActuatorData
+        exclude = ['actuator']
+
+
+@URL('^actuator/$', name='actuator-list')
+class ActuatorListView(ListCreateAPIView):
+    queryset = Actuator.objects.all()
+    serializer_class = ActuatorSerializer
+
+
+@URL('^actuator/(?P<endpoint>[^/]+)/$', name='actuator-detail')
+@URL('^actuator/(?P<pk>[0-9]+)/$', name='actuator-detail')
+class ActuatorDetailView(MultipleFieldLookupMixin,
+                         TrapDjangoValidationErrorMixin,
+                         RetrieveUpdateDestroyAPIView):
+    lookup_field = ('pk', 'endpoint',)
+    queryset = Actuator.objects.all()
+    serializer_class = ActuatorSerializer
+
+    serializers = {
+        'GET': ActuatorDetailSerializer
+    }
+
+    def get_serializer_class(self):
+        if not self.request:
+            return self.serializer_class
+        return self.serializers.get(self.request.method, self.serializer_class)
+
+
+class ActuatorViewMixin(object):
+    actuator = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.actuator = get_object_or_404(Actuator, **self.kwargs)
+        return super(ActuatorViewMixin, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return ActuatorData.objects.filter(actuator=self.actuator).all()
+
+    def perform_create(self, serializer):
+        serializer.save(actuator=self.actuator)
+
+
+@URL('^actuator-data/(?P<endpoint>[^/]+)/$', name='actuator-data')
+@URL('^actuator-data/(?P<pk>[0-9]+)/$', name='actuator-data')
+class ActuatorDataView(TrapDjangoValidationErrorMixin, ActuatorViewMixin, ListCreateAPIView):
+    serializer_class = ActuatorDataSerializer
+
+
+@URL('^actuator-chart/(?P<endpoint>[^/]+)/$', name='actuator-chart')
+@URL('^actuator-chart/(?P<pk>[0-9]+)/$', name='actuator-chart')
+class ActuatorChartView(PygalViewMixin, ActuatorViewMixin, ListAPIView):
+    chart = pygal.DateTimeLine
+    serializer_class = ActuatorDataSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        result = page or queryset
+        chart = self.get_chart()
+        chart.title = self.actuator.name
+        chart.add(
+            self.actuator.measure_unit.symbol if self.actuator.measure_unit else '?',
+            [(sample.time, sample.value) for sample in result],
+        )
+        return chart.render_django_response()
