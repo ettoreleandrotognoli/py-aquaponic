@@ -1,15 +1,16 @@
-import paho.mqtt.client as mqtt
+import json
+
+import paho.mqtt.publish as publish
+from .actuator import Actuator
 
 
-class MqttDevice(object):
-    def __init__(self, topic, host, port=1883):
-        self.topic = topic
-        self.host = host
-        self.port = port
-        pass
+class MqttDevice(Actuator):
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-    def set_value(self):
-        pass
-
-    def get_value(self):
-        pass
+    def set_value(self, value):
+        kwargs = dict(self.kwargs)
+        kwargs.update(dict(payload=json.dumps(value)))
+        publish.single(
+            **self.kwargs
+        )

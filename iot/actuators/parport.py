@@ -1,7 +1,8 @@
 import parallel
+from .actuator import ReadableActuator
 
 
-class DataPin(object):
+class DataPin(ReadableActuator):
     def __init__(self, pin):
         self.parallel = parallel.Parallel()
         self.pin = pin % 8
