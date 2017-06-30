@@ -457,6 +457,7 @@ class PID(models.Model):
         else:
             d = 0
         self.error = error
+        self.save()
         self.output.set_value(p + i + d)
 
     def input_changed(self, sensor_data: SensorData):
