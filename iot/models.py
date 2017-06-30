@@ -163,7 +163,7 @@ class SensorData(ValidateOnSaveMixin, models.Model):
             self.measure_unit = self.sensor.measure_unit
         if self.position_id is None:
             self.position = self.sensor.position
-        if self.measure_unit.magnitude != self.sensor.magnitude:
+        if self.measure_unit and self.measure_unit.magnitude != self.sensor.magnitude:
             error_message = ugettext('measure unit magnitude and sensor magnitude are different')
             raise ValidationError({'measure_unit': error_message})
         return super(SensorData, self).clean()
@@ -221,7 +221,7 @@ class Sensor(ValidateOnSaveMixin, models.Model):
     )
 
     def clean(self):
-        if self.measure_unit.magnitude != self.magnitude:
+        if self.measure_unit and self.measure_unit.magnitude != self.magnitude:
             error_message = ugettext('measure unit magnitude and magnitude are different')
             raise ValidationError({
                 'magnitude': error_message,
@@ -264,15 +264,23 @@ class SensorFusion(models.Model):
 
     strategy = models.CharField(
         max_length=255,
-        verbose_name=_('Fusion strategy')
+        verbose_name=_('Fusion strategy'),
+        choices=(
+            ('iot.fusion.sampling.HighSampling', _('High Sampling')),
+        )
+
     )
 
     strategy_options = JSONField(
+        null=True,
+        blank=True,
         default={}
     )
 
     def input_changed(self, sensor_data: SensorData):
-        raise NotImplementedError()
+        merger = locate(self.strategy)(**self.strategy_options)
+        value, time, measure_unit = merger.merge(sensor_data, self.inputs.all())
+        self.output.push_data(value=value, time=time, measure_unit=measure_unit)
 
 
 class Actuator(models.Model):
@@ -314,6 +322,7 @@ class Actuator(models.Model):
 
     strategy_options = JSONField(
         null=True,
+        blank=True,
         default={}
     )
 

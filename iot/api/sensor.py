@@ -132,7 +132,7 @@ class SensorChartView(PygalViewMixin, SensorViewMixin, ListAPIView):
         chart = self.get_chart()
         chart.title = self.sensor.name
         chart.add(
-            self.sensor.measure_unit.symbol,
+            self.sensor.measure_unit.symbol if self.sensor.measure_unit else '?',
             [(sample.time, sample.value) for sample in result],
         )
         return chart.render_django_response()
