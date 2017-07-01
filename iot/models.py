@@ -369,6 +369,10 @@ class Actuator(models.Model):
 
 
 class ActuatorData(models.Model):
+    class Meta:
+        verbose_name = _('Actuator Data')
+        ordering = ['-time']
+
     time = models.DateTimeField(
         default=timezone.now
     )

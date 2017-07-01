@@ -145,7 +145,7 @@ REST_FRAMEWORK = {
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'asgiref.inmemory.ChannelLayer',
+        'BACKEND': 'asgi_ipc.IPCChannelLayer',
         'ROUTING': 'core.routing.channel_routing',
     },
 }

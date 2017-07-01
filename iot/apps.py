@@ -6,3 +6,4 @@ class IotConfig(AppConfig):
 
     def ready(self):
         from .signals import sensor_data
+        from .signals import actuator_data
