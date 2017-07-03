@@ -1,6 +1,7 @@
+import time
+
 import random
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 from iot.models import Sensor, Magnitude, MeasureUnit
 
 
@@ -55,7 +56,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--interval',
             dest='interval',
-            default=5,
+            default=1,
             help='Time interval in seconds'
         )
 
@@ -75,13 +76,12 @@ class Command(BaseCommand):
         sensor, created = Sensor.objects.get_or_create(name=sensor_name, defaults=defaults)
         if created:
             self.stdout.write(self.style.SUCCESS('Sensor %s created' % sensor_name))
-        time = timezone.now() - timezone.timedelta(seconds=interval * limit)
         value = random.uniform(min_value, max_value)
         for x in range(limit):
             new_value = random.uniform(min_value, max_value)
             value = (value * low_pass + new_value) / (low_pass + 1)
-            sensor.push_data(time=time, value=value)
-            time += timezone.timedelta(seconds=interval)
+            sensor.push_data(value=value)
+            time.sleep(interval)
 
     def handle(self, *args, **options):
         self._handle(**options)

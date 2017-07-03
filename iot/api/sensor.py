@@ -2,76 +2,16 @@ import pygal
 from core.utils.urls import make_url
 from core.utils.views import MultipleFieldLookupMixin, TrapDjangoValidationErrorMixin
 from django.shortcuts import get_object_or_404
-from iot.models import Sensor, SensorData, Magnitude, MeasureUnit, Position
+from iot.models import Sensor, SensorData
 from iot.pygal import PygalViewMixin
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from rest_framework.serializers import ModelSerializer
+from .serializers import SensorSerializer, SensorDetailSerializer, SensorDataSerializer
 
 urlpatterns = []
 
 URL = make_url(urlpatterns)
-
-
-class MagnitudeSerializer(ModelSerializer):
-    class Meta:
-        model = Magnitude
-        fields = ['id', 'name']
-
-
-class MeasureUnitSerializer(ModelSerializer):
-    class Meta:
-        model = MeasureUnit
-        fields = ['id', 'name', 'symbol']
-
-
-class PositionSerializer(ModelSerializer):
-    class Meta:
-        model = Position
-        exclude = ['id']
-
-
-class SensorDetailSerializer(ModelSerializer):
-    class Meta:
-        model = Sensor
-        fields = '__all__'
-
-    magnitude = MagnitudeSerializer(many=False)
-    measure_unit = MeasureUnitSerializer(many=False)
-    position = PositionSerializer(many=False)
-
-
-class SensorSerializer(ModelSerializer):
-    class Meta:
-        model = Sensor
-        fields = '__all__'
-
-    position = PositionSerializer(
-        many=False,
-        read_only=False,
-        required=False,
-    )
-
-    def create(self, validated_data):
-        position = validated_data.get('position', None)
-        if position:
-            position = PositionSerializer().create(position)
-        validated_data['position'] = position
-        return super(SensorSerializer, self).create(validated_data)
-
-    def update(self, instance, validated_data):
-        position = validated_data.pop('position', None)
-        if position:
-            position = PositionSerializer().create(position)
-        instance.position = position
-        return super(SensorSerializer, self).update(instance, validated_data)
-
-
-class SensorDataSerializer(ModelSerializer):
-    class Meta:
-        model = SensorData
-        exclude = ['sensor']
 
 
 @URL('^sensor/$', name='sensor-list')
