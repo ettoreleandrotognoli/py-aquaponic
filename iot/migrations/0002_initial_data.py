@@ -65,7 +65,7 @@ def forwards_func(apps, schema_editor):
 
     electric_tension = Magnitude.objects.get(name='electric tension')
     MeasureUnit.objects.using(db_alias).bulk_create([
-        MeasureUnit(name='volts', symbol='V', magnitude=electric_tension)
+        MeasureUnit(name='volt', symbol='V', magnitude=electric_tension)
     ])
 
     electric_resistance = Magnitude.objects.get(name='electric resistance')
