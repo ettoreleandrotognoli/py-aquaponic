@@ -107,6 +107,18 @@ def forwards_func(apps, schema_editor):
         ConversionFormula(from_unit=kelvin, to_unit=fahrenheit, formula='%f * 1.8 - 459.67'),
     ])
 
+    second = MeasureUnit.objects.using(db_alias).get(name='seconds')
+    minute = MeasureUnit.objects.using(db_alias).get(name='minute')
+    hour = MeasureUnit.objects.using(db_alias).get(name='hour')
+    ConversionFormula.objects.using(db_alias).bulk_create([
+        ConversionFormula(from_unit=second, to_unit=minute, formula='%f/60.0'),
+        ConversionFormula(from_unit=second, to_unit=hour, formula='%f/3600.0'),
+        ConversionFormula(from_unit=minute, to_unit=second, formula='%f * 60'),
+        ConversionFormula(from_unit=minute, to_unit=hour, formula='%f/60.0'),
+        ConversionFormula(from_unit=hour, to_unit=second, formula='%f * 3600.0'),
+        ConversionFormula(from_unit=hour, to_unit=minute, formula='%f* 60'),
+    ])
+
 
 def reverse_func(apps, schema_editor):
     db_alias = schema_editor.connection.alias
