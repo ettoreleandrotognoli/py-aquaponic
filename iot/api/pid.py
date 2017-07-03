@@ -42,7 +42,7 @@ class PIDViewMixin(object):
     pid = None
 
     def dispatch(self, request, *args, **kwargs):
-        self.pid = get_object_or_404(PID, **self.kwargs)
+        self.pid = get_object_or_404(PID.objects.select_related('input', 'output'), **self.kwargs)
         return super(PIDViewMixin, self).dispatch(request, *args, **kwargs)
 
     def perform_create(self, serializer):

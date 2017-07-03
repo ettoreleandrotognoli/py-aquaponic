@@ -11,40 +11,56 @@
     <div class="row">
         {% for sensor in sensor_list%}
         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
-            <object type="image/svg+xml" data="{% url 'iot:sensor-chart' pk=sensor.pk %}?limit=10"
-                    class="chart"></object>
+            <object type="image/svg+xml" class="chart"
+                    sensor-data="{{sensor.name}}"
+                    data="{% url 'iot:sensor-chart' pk=sensor.pk %}?limit=10"></object>
         </div>
         {% endfor %}
     </div>
     <div class="row">
         {% for pid in pid_list%}
         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
-            <object type="image/svg+xml" data="{% url 'iot:pid-chart' pk=pid.pk %}?limit=10" class="chart"></object>
+            <object type="image/svg+xml" class="chart"
+                    actuator-data="{{pid.output.name}}"
+                    sensor-data="{{pid.input.name}}"
+                    data="{% url 'iot:pid-chart' pk=pid.pk %}?limit=10"></object>
         </div>
         {% endfor %}
     </div>
     <div class="row">
         {% for actuator in actuator_list%}
         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
-            <object type="image/svg+xml" data="{% url 'iot:actuator-chart' pk=actuator.pk %}?limit=10"
-                    class="chart"></object>
+            <object type="image/svg+xml" class="chart"
+                    actuator-data="{{actuator.name}}"
+                    data="{% url 'iot:actuator-chart' pk=actuator.pk %}?limit=10"></object>
         </div>
         {% endfor %}
     </div>
 </div>
 <script type="text/javascript">
+
+    var processData = function(wsData){
+        var charts = $('.chart['+wsData.type+'='+wsData.name+']');
+        charts.each(function(){
+            refreshChart($(this));
+        });
+    };
+
+    var refreshChart = function($chart){
+        $chart.attr('data',$chart.attr('data'));
+    };
+
     $(function(){
         var ws = new WebSocket('ws:127.0.0.1:8000');
         ws.onmessage = function(event){
-            $('.chart').each(function(){
-                var oldChart = $(this);
-                var newChart = oldChart.clone();
-                oldChart[0].parentNode.replaceChild(newChart[0],oldChart[0]);
-            });
+            try{
+                var data = JSON.parse(event.data);
+                processData(data);
+            }
+            catch(ex){
+                console.error(ex);
+            }
         };
     });
-
-
-
 </script>
 {% endblock %}

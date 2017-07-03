@@ -9,7 +9,7 @@ URL = make_url(urlpatterns)
 
 @URL('^$')
 def home(request):
-    pid_list = PID.objects.all()
+    pid_list = PID.objects.select_related('input', 'output')
     actuator_list = Actuator.objects.all()
     sensor_list = Sensor.objects.all()
     return render(request, 'dashboard/charts.html', locals())
