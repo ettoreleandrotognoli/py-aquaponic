@@ -20,5 +20,5 @@ from rest_framework.documentation import include_docs_urls
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^docs/', include_docs_urls(title='Py-Aquaponic')),
-    url(r'', include('iot.urls', namespace='iot')),
+    url(r'', include('iot.urls')),
 ]

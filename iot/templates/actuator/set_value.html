@@ -1,0 +1,4 @@
+<form action="{% url 'iot:actuator-set-value' pk=actuator.pk %}" method="POST">
+    {% csrf_token %}
+    <input value="{{actuator.value}}" name="value"/>
+</form>

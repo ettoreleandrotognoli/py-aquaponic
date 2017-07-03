@@ -4,12 +4,14 @@ from iot import models
 
 @admin.register(models.Magnitude)
 class MagnitudeAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['name']
+    search_fields = ['name', 'description']
 
 
 @admin.register(models.MeasureUnit)
 class MeasureUnitAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['name', 'symbol']
+    list_filter = ['magnitude']
 
 
 @admin.register(models.Sensor)

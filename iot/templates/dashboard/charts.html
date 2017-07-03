@@ -13,7 +13,7 @@
         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
             <object type="image/svg+xml" class="chart"
                     sensor-data="{{sensor.name}}"
-                    data="{% url 'iot:sensor-chart' pk=sensor.pk %}?limit=10"></object>
+                    data="{% url 'iot-api:sensor-chart' pk=sensor.pk %}?limit=10"></object>
         </div>
         {% endfor %}
     </div>
@@ -23,7 +23,7 @@
             <object type="image/svg+xml" class="chart"
                     actuator-data="{{pid.output.name}}"
                     sensor-data="{{pid.input.name}}"
-                    data="{% url 'iot:pid-chart' pk=pid.pk %}?limit=10"></object>
+                    data="{% url 'iot-api:pid-chart' pk=pid.pk %}?limit=10"></object>
         </div>
         {% endfor %}
     </div>
@@ -32,7 +32,7 @@
         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
             <object type="image/svg+xml" class="chart"
                     actuator-data="{{actuator.name}}"
-                    data="{% url 'iot:actuator-chart' pk=actuator.pk %}?limit=10"></object>
+                    data="{% url 'iot-api:actuator-chart' pk=actuator.pk %}?limit=10"></object>
         </div>
         {% endfor %}
     </div>

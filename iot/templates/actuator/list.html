@@ -1,0 +1,38 @@
+{% extends 'iot/main.html' %}
+{% load i18n %}
+{% block body %}
+<div class="container">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>{% trans 'Name' %}</th>
+            <th>{% trans 'Endpoint' %}</th>
+            <th>{% trans 'Value' %}</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for actuator in actuator_list %}
+        <tr>
+            <td>
+                {{actuator.name}}
+            </td>
+            <td>
+                {{actuator.endpoint}}
+            </td>
+            <td>
+                {{actuator.value}} {{actuator.measure_unit.symbol|default:''}}
+            </td>
+            <td>
+                {% if actuator.pids %}
+                {% trans 'PID Controlled' %}
+                {% else%}
+                {% include 'actuator/set_value.html' with actuator=actuator %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

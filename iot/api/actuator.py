@@ -55,7 +55,7 @@ class ActuatorViewMixin(object):
 
 @URL('^actuator-data/(?P<endpoint>[^/]+)/$', name='actuator-data')
 @URL('^actuator-data/(?P<pk>[0-9]+)/$', name='actuator-data')
-class ActuatorDataView(TrapDjangoValidationErrorMixin, ActuatorViewMixin, ListCreateAPIView):
+class ActuatorDataView(TrapDjangoValidationErrorMixin, ActuatorViewMixin, ListAPIView):
     serializer_class = ActuatorDataSerializer
 
 

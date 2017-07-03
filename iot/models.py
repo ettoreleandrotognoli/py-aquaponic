@@ -16,6 +16,7 @@ from jsonfield import JSONField
 class Magnitude(models.Model):
     class Meta:
         verbose_name = _('Magnitude')
+        ordering = ['name']
 
     name = models.CharField(
         max_length=255,
@@ -36,6 +37,7 @@ class Magnitude(models.Model):
 class MeasureUnit(models.Model):
     class Meta:
         verbose_name = _('Measure Unit')
+        ordering = ['name']
 
     symbol = models.CharField(
         max_length=8,
@@ -71,6 +73,7 @@ class ConversionFormula(models.Model):
 
     class Meta:
         verbose_name = _('Conversion Formula')
+        ordering = ['from_unit__name', 'to_unit__name']
 
     objects = ConversionFormulaQuerySet.as_manager()
 
@@ -176,6 +179,7 @@ class SensorData(ValidateOnSaveMixin, models.Model):
 class Sensor(ValidateOnSaveMixin, models.Model):
     class Meta:
         verbose_name = _('Sensor')
+        ordering = ['name']
 
     name = models.CharField(
         max_length=255,
@@ -249,6 +253,7 @@ class Sensor(ValidateOnSaveMixin, models.Model):
 class SensorFusion(models.Model):
     class Meta:
         verbose_name = _('Sensor Fusion')
+        ordering = ['output__name']
 
     inputs = models.ManyToManyField(
         'Sensor',
@@ -287,6 +292,7 @@ class SensorFusion(models.Model):
 class Actuator(models.Model):
     class Meta:
         verbose_name = _('Actuator')
+        ordering = ['name']
 
     name = models.CharField(
         max_length=255,
@@ -410,6 +416,7 @@ class ActuatorData(models.Model):
 class PID(models.Model):
     class Meta:
         verbose_name = _('PID')
+        ordering = ['-active', 'name']
 
     name = models.CharField(
         max_length=255,
