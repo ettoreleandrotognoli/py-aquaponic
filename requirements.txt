@@ -12,3 +12,4 @@ asgi_ipc
 pygal
 pyparallel
 paho-mqtt
+pyFirmata

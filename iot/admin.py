@@ -10,7 +10,7 @@ class MagnitudeAdmin(admin.ModelAdmin):
 
 @admin.register(models.MeasureUnit)
 class MeasureUnitAdmin(admin.ModelAdmin):
-    list_display = ['name', 'symbol']
+    list_display = ['name', 'symbol', 'magnitude']
     list_filter = ['magnitude']
 
 

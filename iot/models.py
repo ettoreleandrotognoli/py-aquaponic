@@ -3,7 +3,6 @@ from pydoc import locate
 from uuid import uuid4 as unique
 
 import re
-from core.utils.models import ValidateOnSaveMixin
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -11,6 +10,8 @@ from django.utils.timezone import timedelta
 from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
+
+from core.utils.models import ValidateOnSaveMixin
 
 
 class Magnitude(models.Model):
@@ -224,6 +225,17 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         verbose_name=_('It is a virtual sensor')
     )
 
+    def set_value(self, value):
+        self.push_data(value=value)
+
+    def get_value(self):
+        last_data = self.data.order_by('-time').first()
+        if not last_data:
+            return None
+        return last_data.value
+
+    value = property(get_value, set_value)
+
     def clean(self):
         if self.measure_unit and self.measure_unit.magnitude != self.magnitude:
             error_message = ugettext('measure unit magnitude and magnitude are different')
@@ -272,6 +284,8 @@ class SensorFusion(models.Model):
         verbose_name=_('Fusion strategy'),
         choices=(
             ('iot.fusion.sampling.HighSampling', _('High Sampling')),
+            ('iot.fusion.ldr.Lumen', _('Electric Tension to Lumen using a LDR')),
+            ('iot.fusion.ldr.Lux', _('Electric Tension to Lux using a LDR')),
         )
 
     )
@@ -326,6 +340,7 @@ class Actuator(models.Model):
             ('iot.actuators.actuator.NullActuator', _('Null Actuator')),
             ('iot.actuators.parport.DataPin', _('Parallel Port Pin')),
             ('iot.actuators.firmata.FirmataPin', _('Arduino Pin using Firmata Protocol')),
+            ('iot.actuators.mqtt.MqttDevice', _('Mqtt Remote Device')),
         ),
     )
 

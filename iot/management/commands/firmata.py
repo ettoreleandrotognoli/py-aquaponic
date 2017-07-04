@@ -3,7 +3,8 @@ import time
 from django.core.management.base import BaseCommand
 from pyfirmata import Arduino, util
 
-from iot.models import Sensor, Magnitude, MeasureUnit, Actuator
+from iot.models import Actuator
+from iot.models import Sensor, Magnitude, MeasureUnit
 
 
 class Command(BaseCommand):
