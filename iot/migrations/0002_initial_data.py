@@ -113,7 +113,7 @@ def forwards_func(apps, schema_editor):
         ConversionFormula(from_unit=kelvin, to_unit=fahrenheit, formula='%f * 1.8 - 459.67'),
     ])
 
-    second = MeasureUnit.objects.using(db_alias).get(name='seconds')
+    second = MeasureUnit.objects.using(db_alias).get(name='second')
     minute = MeasureUnit.objects.using(db_alias).get(name='minute')
     hour = MeasureUnit.objects.using(db_alias).get(name='hour')
     ConversionFormula.objects.using(db_alias).bulk_create([

@@ -272,6 +272,8 @@ class SensorFusion(models.Model):
         verbose_name=_('Fusion strategy'),
         choices=(
             ('iot.fusion.sampling.HighSampling', _('High Sampling')),
+            ('iot.fusion.ldr.Lumen', _('Electric Tension to Lumen using a LDR')),
+            ('iot.fusion.ldr.Lux', _('Electric Tension to Lux using a LDR')),
         )
 
     )
