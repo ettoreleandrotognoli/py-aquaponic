@@ -224,6 +224,17 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         verbose_name=_('It is a virtual sensor')
     )
 
+    def set_value(self, value):
+        self.push_data(value=value)
+
+    def get_value(self):
+        last_data = self.data.order_by('-time').first()
+        if not last_data:
+            return None
+        return last_data.value
+
+    value = property(get_value, set_value)
+
     def clean(self):
         if self.measure_unit and self.measure_unit.magnitude != self.magnitude:
             error_message = ugettext('measure unit magnitude and magnitude are different')

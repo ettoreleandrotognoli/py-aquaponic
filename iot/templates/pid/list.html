@@ -1,0 +1,42 @@
+{% extends 'iot/main.html' %}
+{% load i18n %}
+{% block body %}
+<div class="container">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>{% trans 'Input' %}</th>
+            <th>{% trans 'Input Value' %}</th>
+            <th>{% trans 'Output' %}</th>
+            <th>{% trans 'Output Value' %}</th>
+            <th>{% trans 'Target' %}</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for pid in pid_list %}
+        <tr>
+            <td>
+                {{pid.input.name}}
+            </td>
+            <td>
+                {{pid.input.value}} {{pid.input.measure_unit.symbol}}
+            </td>
+            <td>
+                {{pid.output.name}}
+            </td>
+            <td>
+                {{pid.output.value}} {{pid.output.measure_unit.symbol}}
+            </td>
+            <td>
+                {{pid.target}}
+            </td>
+            <td>
+                {% include 'pid/set_target.html' with pid=pid %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

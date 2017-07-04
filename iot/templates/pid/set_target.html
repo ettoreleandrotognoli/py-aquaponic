@@ -1,0 +1,4 @@
+<form action="{% url 'iot:pid-set-target' pk=pid.pk %}" method="POST">
+    {% csrf_token %}
+    <input value="{{pid.target}}" name="target"/>
+</form>
