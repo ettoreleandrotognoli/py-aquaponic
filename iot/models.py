@@ -325,6 +325,7 @@ class Actuator(models.Model):
         choices=(
             ('iot.actuators.actuator.NullActuator', _('Null Actuator')),
             ('iot.actuators.parport.DataPin', _('Parallel Port Pin')),
+            ('iot.actuators.mqtt.MqttDevice', _('Mqtt Remote Device')),
         ),
     )
 
