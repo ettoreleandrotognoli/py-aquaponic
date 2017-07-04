@@ -1,8 +1,9 @@
 import time
-from pyfirmata import Arduino, util
-from django.core.management.base import BaseCommand
 
-from iot.models import Sensor, Magnitude, MeasureUnit
+from django.core.management.base import BaseCommand
+from pyfirmata import Arduino, util
+
+from iot.models import Sensor, Magnitude, MeasureUnit, Actuator
 
 
 class Command(BaseCommand):
@@ -55,6 +56,19 @@ class Command(BaseCommand):
             ))
             if created:
                 self.stdout.write(self.style.SUCCESS('Sensor "%s" created!' % sensor_name))
+
+        for digital_pin in board.digital:
+            pin = 'd%d' % digital_pin.pin_number
+            actuator_name = '%s-%s' % (name_prefix, pin)
+            actuator, created = Actuator.objects.get_or_create(name=actuator_name, defaults=dict(
+                magnitude=electric_tension,
+                measure_unit=volt,
+                strategy='iot.actuators.firmata.FirmataPin',
+                strategy_options=dict(pin=digital_pin.pin_number),
+            ))
+            if created:
+                self.stdout.write(self.style.SUCCESS('Actuator "%s" created!' % actuator_name))
+
         while True:
             time.sleep(interval)
             for analog_pin in board.analog:
