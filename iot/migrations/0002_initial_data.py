@@ -20,7 +20,8 @@ def forwards_func(apps, schema_editor):
         Magnitude(name='electric resistance', description=''),
         Magnitude(name='electric current', description=''),
         Magnitude(name='frequency', description=''),
-        Magnitude(name='light', description=''),
+        Magnitude(name='luminous flux', description=''),
+        Magnitude(name='lighting', description=''),
         Magnitude(name='proportion', description=''),
     ])
 
@@ -83,9 +84,14 @@ def forwards_func(apps, schema_editor):
         MeasureUnit(name='hertz', symbol='Hz', magnitude=frequency)
     ])
 
-    light = Magnitude.objects.using(db_alias).get(name='light')
+    luminous_flux = Magnitude.objects.using(db_alias).get(name='luminous flux')
     MeasureUnit.objects.using(db_alias).bulk_create([
-        MeasureUnit(name='luminous flux', symbol='lm', magnitude=light)
+        MeasureUnit(name='lumen', symbol='lm', magnitude=luminous_flux)
+    ])
+
+    lighting = Magnitude.objects.using(db_alias).get(name='lighting')
+    MeasureUnit.objects.using(db_alias).bulk_create([
+        MeasureUnit(name='lux', symbol='lx', magnitude=lighting)
     ])
 
     proportion = Magnitude.objects.using(db_alias).get(name='proportion')
