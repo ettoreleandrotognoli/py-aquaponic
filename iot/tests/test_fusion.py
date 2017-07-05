@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from iot.fusion.electronic import VoltageDivider
 from iot.fusion.thermistor import SteinhartHart
+from iot.fusion.thermistor import BetaFactor
 from iot.models import SensorData, MeasureUnit
 
 volt = MeasureUnit.objects.get(name='volt')
@@ -40,6 +41,35 @@ class TestSteinhartHart(TestCase):
             c=0.00000008863,
         )
         result, time, unit = steinhart_hart.merge(SensorData(
+            value=vo,
+            measure_unit=volt,
+        ), [])
+        self.assertEqual(unit.name, 'celsius')
+        self.assertAlmostEqual(25, result, delta=0.1)
+
+
+class TestBetaFactor(TestCase):
+    def test_ntc_10k_3950(self):
+        tension = 5
+        thermistor = 10000.0
+        resistor = 10000.0
+        voltage_divider = VoltageDivider(
+            r1=resistor,
+            r2=thermistor,
+            vi=tension,
+        )
+        vo = voltage_divider.calc_vo()
+
+        beta_factor = BetaFactor(
+            resistor=resistor,
+            tension=tension,
+            proportional=True,
+            output='celsius',
+            b=3950.0,
+            r=thermistor,
+            t=298.15,
+        )
+        result, time, unit = beta_factor.merge(SensorData(
             value=vo,
             measure_unit=volt,
         ), [])
