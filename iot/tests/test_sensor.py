@@ -24,7 +24,7 @@ class TestSensor(TestCase):
             magnitude=celsius.magnitude
         )
         result = self.client.post(
-            reverse('iot:sensor-data', kwargs=dict(endpoint=sensor.endpoint)),
+            reverse('iot-api:sensor-data', kwargs=dict(endpoint=sensor.endpoint)),
             data={'value': random.uniform(min_value, max_value)}
         )
         self.assertEqual(201, result.status_code)

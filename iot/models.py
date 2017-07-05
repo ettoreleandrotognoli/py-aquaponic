@@ -61,6 +61,12 @@ class MeasureUnit(models.Model):
         related_name='measures_units'
     )
 
+    def convert(self, value, unit):
+        if self == unit:
+            return value
+        formula = ConversionFormula.objects.get(from_unit=unit, to_unit=self)
+        return formula.convert_fast(value)
+
     def __str__(self):
         return '%s (%s)' % (self.name, self.symbol)
 
