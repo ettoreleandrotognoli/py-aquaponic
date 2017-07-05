@@ -86,3 +86,6 @@ class SensorFusionAdmin(admin.ModelAdmin):
         'inputs__name',
         'output__name',
     ]
+    filter_horizontal = [
+        'inputs'
+    ]

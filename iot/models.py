@@ -283,6 +283,7 @@ class SensorFusion(models.Model):
         related_name='origin',
         verbose_name=_('Output sensor'),
         help_text=_('Output virtual sensor'),
+        limit_choices_to={'is_virtual': True},
     )
 
     strategy = models.CharField(
@@ -292,6 +293,8 @@ class SensorFusion(models.Model):
             ('iot.fusion.sampling.HighSampling', _('High Sampling')),
             ('iot.fusion.ldr.Lumen', _('Electric Tension to Lumen using a LDR')),
             ('iot.fusion.ldr.Lux', _('Electric Tension to Lux using a LDR')),
+            ('iot.fusion.thermistor.SteinhartHart', _('Temperatude with Steinhart-Hart (NTC Thermistor) ')),
+            ('iot.fusion.thermistor.BetaFactor', _('Temperatude with Beta Factor (NTC Thermistor) ')),
         )
 
     )
