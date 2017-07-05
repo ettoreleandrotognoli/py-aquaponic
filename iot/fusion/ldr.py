@@ -12,7 +12,7 @@ class Lux(Merger):
         self.ldr_constant = ldr_constant
         self.light_proportional = light_proportional
 
-    def merge(self, sensor_data, sensors):
+    def merge(self, output_sensor, sensor_data, sensors):
         value = sensor_data.value
         if self.light_proportional:
             lux = (value * self.ldr_constant) / (self.resistor * (self.tension - value))

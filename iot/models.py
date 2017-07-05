@@ -295,6 +295,7 @@ class SensorFusion(models.Model):
             ('iot.fusion.ldr.Lux', _('Electric Tension to Lux using a LDR')),
             ('iot.fusion.thermistor.SteinhartHart', _('Temperatude with Steinhart-Hart (NTC Thermistor) ')),
             ('iot.fusion.thermistor.BetaFactor', _('Temperatude with Beta Factor (NTC Thermistor) ')),
+            ('iot.fusion.filter.LowPass', _('Low Pass Filter')),
         )
 
     )
@@ -307,7 +308,7 @@ class SensorFusion(models.Model):
 
     def input_changed(self, sensor_data: SensorData):
         merger = locate(self.strategy)(**self.strategy_options)
-        value, time, measure_unit = merger.merge(sensor_data, self.inputs.all())
+        value, time, measure_unit = merger.merge(self.output, sensor_data, self.inputs.all())
         if value:
             self.output.push_data(value=value, time=time, measure_unit=measure_unit)
 

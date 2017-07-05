@@ -26,7 +26,7 @@ class SteinhartHart(Merger):
         self.tension = tension
         self.proportional = proportional
 
-    def merge(self, sensor_data, sensors):
+    def merge(self, output_sensor, sensor_data, sensors):
         value = sensor_data.value
         voltage_divider = VoltageDivider(vi=self.tension, vo=value)
         if self.proportional:
@@ -55,7 +55,7 @@ class BetaFactor(Merger):
         self.output = output
         self.proportional = proportional
 
-    def merge(self, sensor_data, sensors):
+    def merge(self, output_sensor, sensor_data, sensors):
         value = sensor_data.value
         voltage_divider = VoltageDivider(vi=self.tension, vo=value)
         if self.proportional:
