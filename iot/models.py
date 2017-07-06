@@ -3,6 +3,8 @@ from pydoc import locate
 from uuid import uuid4 as unique
 
 import re
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -520,3 +522,51 @@ class PID(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class GenericOutput(models.Model):
+    class Meta:
+        abstract = True
+
+    output_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        limit_choices_to={'is_virtual': True},
+    )
+
+    output_queryset = models.Q(app_label='iot', model='PID') | models.Q(app_label='iot', model='Actuator')
+
+    output_pk = models.PositiveIntegerField(
+
+    )
+
+    output = GenericForeignKey('output_type', 'output_pk')
+
+
+class TimeTrigger(GenericOutput):
+    active = models.BooleanField(
+        default=True,
+    )
+
+    input = models.ForeignKey(
+        Sensor
+    )
+
+
+class SensorTrigger(GenericOutput):
+    active = models.BooleanField(
+        default=True,
+    )
+
+    input = models.ForeignKey(
+        Sensor
+    )
+
+    value = models.FloatField(
+
+    )
+
+    delta = models.FloatField(
+
+    )
+
