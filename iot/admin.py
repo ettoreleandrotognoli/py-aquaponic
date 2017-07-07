@@ -89,3 +89,13 @@ class SensorFusionAdmin(admin.ModelAdmin):
     filter_horizontal = [
         'inputs'
     ]
+
+
+@admin.register(models.TriggerCondition)
+class TriggerConditionAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.Trigger)
+class TriggerAdmin(admin.ModelAdmin):
+    pass
