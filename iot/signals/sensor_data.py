@@ -1,11 +1,11 @@
 import json
 
+from channels import Channel
 from channels import Group as WSGroup
 from core.utils.signals import try_signal, disable_for_loaddata
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from iot.models import SensorData
-from iot.models import Trigger
 
 
 @receiver(post_save, sender=SensorData)
@@ -30,9 +30,9 @@ def ws_update(instance, created, **kwargs):
 def update_fusion(instance, created, **kwargs):
     if not created:
         return
-    consumers = instance.sensor.consumers.all()
-    for consumer in consumers:
-        consumer.input_changed(instance)
+    Channel('iot.update_fusion').send(content=dict(
+        sensor_data_pk=instance.pk
+    ), immediately=True)
 
 
 @receiver(post_save, sender=SensorData)
@@ -41,9 +41,9 @@ def update_fusion(instance, created, **kwargs):
 def update_pid(instance, created, **kwargs):
     if not created:
         return
-    pid_controllers = instance.sensor.pid_controllers.all()
-    for pid_controller in pid_controllers:
-        pid_controller.input_changed(instance)
+    Channel('iot.update_pid').send(content=dict(
+        sensor_data_pk=instance.pk
+    ), immediately=True)
 
 
 @receiver(post_save, sender=SensorData)
@@ -52,6 +52,6 @@ def update_pid(instance, created, **kwargs):
 def update_trigger(instance, created, **kwargs):
     if not created:
         return
-    triggers = Trigger.objects.filter(conditions__input=instance.sensor, active=True)
-    for trigger in triggers:
-        trigger.try_fire()
+    Channel('iot.update_trigger').send(content=dict(
+        sensor_data_pk=instance.pk
+    ), immediately=True)
