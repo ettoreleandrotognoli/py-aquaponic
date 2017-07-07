@@ -561,14 +561,14 @@ class TriggerCondition(models.Model):
 
     def clean(self):
         try:
-            self.check(0.0)
+            self.check_condition(0.0)
         except Exception as ex:
             raise ValidationError({
                 'params': ex.message,
                 'check_script': ex.message,
             })
 
-    def check(self, sensor_value=None):
+    def check_condition(self, sensor_value=None):
         if sensor_value is None:
             sensor_value = self.sensor.value
         params = self.params
@@ -583,6 +583,8 @@ class TriggerCondition(models.Model):
 
 
 class Trigger(models.Model):
+    output_type_queryset = models.Q(app_label='iot', model='pid') | models.Q(app_label='iot', model='actuator')
+
     active = models.BooleanField(
         default=True,
     )
@@ -607,10 +609,8 @@ class Trigger(models.Model):
     output_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
-        limit_choices_to={'is_virtual': True},
+        limit_choices_to=output_type_queryset,
     )
-
-    output_queryset = models.Q(app_label='iot', model='PID') | models.Q(app_label='iot', model='Actuator')
 
     output_pk = models.PositiveIntegerField(
 
@@ -619,7 +619,7 @@ class Trigger(models.Model):
     output = GenericForeignKey('output_type', 'output_pk')
 
     def check_conditions(self):
-        results = [condition.check() for condition in self.check_conditions()]
+        results = [condition.check_condition() for condition in self.check_conditions()]
         return reduce(locate(self.reduce_operation), results)
 
     def calc_output(self):

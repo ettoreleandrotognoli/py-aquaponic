@@ -93,9 +93,40 @@ class SensorFusionAdmin(admin.ModelAdmin):
 
 @admin.register(models.TriggerCondition)
 class TriggerConditionAdmin(admin.ModelAdmin):
-    pass
+    list_display = [
+        'trigger',
+        'input',
+        'check_script',
+    ]
+    list_filter = [
+        'input',
+        'trigger',
+    ]
+    search_fields = [
+        'input__name',
+        'trigger__name',
+    ]
+
+
+class TriggerConditionInline(admin.TabularInline):
+    model = models.TriggerCondition
 
 
 @admin.register(models.Trigger)
 class TriggerAdmin(admin.ModelAdmin):
-    pass
+    inlines = [
+        TriggerConditionInline,
+    ]
+    list_display = [
+        'name',
+        'active',
+        'output',
+        'output_value',
+    ]
+    list_filter = [
+        'output_type',
+    ]
+    search_fields = [
+        'conditions__input__name',
+        'output__name',
+    ]
