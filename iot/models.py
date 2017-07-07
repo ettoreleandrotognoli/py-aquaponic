@@ -3,6 +3,7 @@ from pydoc import locate
 from uuid import uuid4 as unique
 
 import re
+from core.utils.models import ValidateOnSaveMixin
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -11,9 +12,8 @@ from django.utils import timezone
 from django.utils.timezone import timedelta
 from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy as _
+from functools import reduce
 from jsonfield import JSONField
-
-from core.utils.models import ValidateOnSaveMixin
 
 
 class Magnitude(models.Model):
@@ -495,6 +495,15 @@ class PID(models.Model):
 
     )
 
+    def set_value(self, value):
+        self.target = value
+        self.save()
+
+    def get_value(self):
+        return self.target
+
+    value = property(get_value, set_value)
+
     def update(self, feedback, interval: timedelta):
         error = self.target - feedback
         dt = interval.seconds
@@ -524,9 +533,76 @@ class PID(models.Model):
         return self.name
 
 
-class GenericOutput(models.Model):
-    class Meta:
-        abstract = True
+class TriggerCondition(models.Model):
+    input = models.ForeignKey(
+        Sensor,
+    )
+
+    params = JSONField(
+
+    )
+
+    check_script = models.TextField(
+        choices=(
+            ('s > p', _('>')),
+            ('s >= p', _('>=')),
+            ('s < p', _('<')),
+            ('s <= p', _('<=')),
+            ('s == p', _('=')),
+            ('s != p', _('!=')),
+            ('s >= p0 and s <= p1', _('between')),
+        )
+    )
+
+    trigger = models.ForeignKey(
+        'Trigger',
+        related_name='conditions',
+    )
+
+    def clean(self):
+        try:
+            self.check(0.0)
+        except Exception as ex:
+            raise ValidationError({
+                'params': ex.message,
+                'check_script': ex.message,
+            })
+
+    def check(self, sensor_value=None):
+        if sensor_value is None:
+            sensor_value = self.sensor.value
+        params = self.params
+        if isinstance(params, dict):
+            params = params
+        elif isinstance(params, list):
+            params = dict([('p%d' % k, v) for k, v in zip(range(len(params)), params)])
+        else:
+            params = dict(p=params)
+        params.update(dict(s=sensor_value))
+        return eval(self.check_script, globals(), params)
+
+
+class Trigger(models.Model):
+    active = models.BooleanField(
+        default=True,
+    )
+
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+    )
+
+    reduce_operator = models.CharField(
+        max_length=255,
+        choices=(
+            ('operator.and_', _('And')),
+            ('operator.or_', _('Or')),
+        )
+    )
+
+    output_value = models.FloatField(
+
+    )
 
     output_type = models.ForeignKey(
         ContentType,
@@ -542,31 +618,15 @@ class GenericOutput(models.Model):
 
     output = GenericForeignKey('output_type', 'output_pk')
 
+    def check_conditions(self):
+        results = [condition.check() for condition in self.check_conditions()]
+        return reduce(locate(self.reduce_operation), results)
 
-class TimeTrigger(GenericOutput):
-    active = models.BooleanField(
-        default=True,
-    )
+    def calc_output(self):
+        return self.output_value
 
-    input = models.ForeignKey(
-        Sensor
-    )
-
-
-class SensorTrigger(GenericOutput):
-    active = models.BooleanField(
-        default=True,
-    )
-
-    input = models.ForeignKey(
-        Sensor
-    )
-
-    value = models.FloatField(
-
-    )
-
-    delta = models.FloatField(
-
-    )
-
+    def try_fire(self):
+        if not self.check_conditions():
+            return
+        output_value = self.calc_output()
+        self.output.value = output_value
