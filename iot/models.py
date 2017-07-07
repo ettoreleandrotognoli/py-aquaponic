@@ -542,7 +542,8 @@ class TriggerCondition(models.Model):
 
     )
 
-    check_script = models.TextField(
+    check_script = models.CharField(
+        max_length=255,
         choices=(
             ('s > p', _('>')),
             ('s >= p', _('>=')),
@@ -570,7 +571,7 @@ class TriggerCondition(models.Model):
 
     def check_condition(self, sensor_value=None):
         if sensor_value is None:
-            sensor_value = self.sensor.value
+            sensor_value = self.input.value
         params = self.params
         if isinstance(params, dict):
             params = params
@@ -582,25 +583,8 @@ class TriggerCondition(models.Model):
         return eval(self.check_script, globals(), params)
 
 
-class Trigger(models.Model):
+class TriggerAction(models.Model):
     output_type_queryset = models.Q(app_label='iot', model='pid') | models.Q(app_label='iot', model='actuator')
-
-    active = models.BooleanField(
-        default=True,
-    )
-
-    name = models.CharField(
-        max_length=255,
-        unique=True,
-    )
-
-    reduce_operator = models.CharField(
-        max_length=255,
-        choices=(
-            ('operator.and_', _('And')),
-            ('operator.or_', _('Or')),
-        )
-    )
 
     output_value = models.FloatField(
 
@@ -618,15 +602,39 @@ class Trigger(models.Model):
 
     output = GenericForeignKey('output_type', 'output_pk')
 
-    def check_conditions(self):
-        results = [condition.check_condition() for condition in self.check_conditions()]
-        return reduce(locate(self.reduce_operation), results)
+    trigger = models.ForeignKey(
+        'Trigger',
+        related_name='actions',
+    )
 
-    def calc_output(self):
-        return self.output_value
+    def do_action(self):
+        self.output.value = self.output_value
+
+
+class Trigger(models.Model):
+    active = models.BooleanField(
+        default=True,
+    )
+
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+    )
+
+    reduce_operator = models.CharField(
+        max_length=255,
+        choices=(
+            ('operator.and_', _('And')),
+            ('operator.or_', _('Or')),
+        )
+    )
+
+    def check_conditions(self):
+        results = [condition.check_condition() for condition in self.conditions.all()]
+        return reduce(locate(self.reduce_operator), results)
 
     def try_fire(self):
         if not self.check_conditions():
             return
-        output_value = self.calc_output()
-        self.output.value = output_value
+        for action in self.actions.all():
+            action.do_action()

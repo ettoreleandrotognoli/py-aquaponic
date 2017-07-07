@@ -52,6 +52,6 @@ def update_pid(instance, created, **kwargs):
 def update_trigger(instance, created, **kwargs):
     if not created:
         return
-    triggers = Trigger.objects.filter(conditions=instance, active=True)
+    triggers = Trigger.objects.filter(conditions__input=instance.sensor, active=True)
     for trigger in triggers:
         trigger.try_fire()

@@ -108,25 +108,41 @@ class TriggerConditionAdmin(admin.ModelAdmin):
     ]
 
 
+@admin.register(models.TriggerAction)
+class TriggerActionAdmin(admin.ModelAdmin):
+    list_display = [
+        'trigger',
+        'output',
+        'output_value',
+    ]
+    list_filter = [
+        'trigger',
+        'output_type',
+    ]
+    search_fields = [
+        'output__name',
+        'trigger__name',
+    ]
+
+
 class TriggerConditionInline(admin.TabularInline):
     model = models.TriggerCondition
+
+
+class TriggerActionInline(admin.TabularInline):
+    model = models.TriggerAction
 
 
 @admin.register(models.Trigger)
 class TriggerAdmin(admin.ModelAdmin):
     inlines = [
         TriggerConditionInline,
+        TriggerActionInline,
     ]
     list_display = [
         'name',
         'active',
-        'output',
-        'output_value',
-    ]
-    list_filter = [
-        'output_type',
     ]
     search_fields = [
         'conditions__input__name',
-        'output__name',
     ]
