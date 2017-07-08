@@ -497,12 +497,21 @@ class PID(models.Model):
 
     def set_value(self, value):
         self.target = value
+        self.error = 0
+        self.integral = 0
         self.save()
 
     def get_value(self):
         return self.target
 
     value = property(get_value, set_value)
+
+    def _error_change(self, error):
+        if self.error > 0 > error:
+            return True
+        if self.error < 0 < error:
+            return True
+        return False
 
     def update(self, feedback, interval: timedelta):
         error = self.target - feedback
@@ -514,6 +523,8 @@ class PID(models.Model):
             d = self.kd * (error - self.error) / dt
         else:
             d = 0
+        if self._error_change(error):
+            self.integral = 0
         self.error = error
         self.save()
         old_value = self.output.get_value()

@@ -92,7 +92,7 @@ class Command(BaseCommand):
         def firmata_consumer(message, **kwargs):
             set_pin(**message.content)
 
-        self.channel_layer.router.add_route(route('firmata', firmata_consumer))
+        self.channel_layer.router.add_route(route('iot.firmata', firmata_consumer))
 
         worker = WorkerThread(self.channel_layer)
         worker.daemon = True

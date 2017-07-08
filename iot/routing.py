@@ -16,7 +16,7 @@ def update_pid(message):
     sensor_data = SensorData.objects.filter(
         pk=message.content['sensor_data_pk']
     ).select_related('sensor').get()
-    pid_controllers = sensor_data.sensor.pid_controllers.all()
+    pid_controllers = sensor_data.sensor.pid_controllers.filter(active=True)
     for pid_controller in pid_controllers:
         pid_controller.input_changed(sensor_data)
 
