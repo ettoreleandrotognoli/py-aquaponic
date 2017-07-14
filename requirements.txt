@@ -8,7 +8,6 @@ django-filter
 coreapi
 pygments
 channels
-asgi_ipc
 pygal
 pyparallel
 paho-mqtt
