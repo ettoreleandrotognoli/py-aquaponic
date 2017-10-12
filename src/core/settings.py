@@ -18,6 +18,7 @@ import dj_database_url
 try:
     from psycopg2cffi import compat
 
+    DISABLE_SERVER_SIDE_CURSORS = True
     compat.register()
 except ImportError:
     pass
@@ -34,7 +35,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'upmxof7pp2h78tbtp9e3=q5#-%_7#rf@1!f#1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = strtobool(os.environ.get('DEBUG', 'True'))
 
-SECURE_SSL_REDIRECT = strtobool(os.environ.get('SSL', str(not DEBUG)))
+SECURE_SSL_REDIRECT = strtobool(os.environ.get('SSL', 'False'))
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ALLOWED_HOSTS = ['*']
@@ -153,7 +154,7 @@ REST_FRAMEWORK = {
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'asgi_ipc.IPCChannelLayer',
+        'BACKEND': 'asgiref.inmemory.ChannelLayer',
         'ROUTING': 'core.routing.channel_routing',
     },
 }
@@ -163,3 +164,5 @@ if os.environ.get('REDIS_URL', False):
     CHANNEL_LAYERS['default']['CONFIG'] = {
         'hosts': [os.environ.get('REDIS_URL')]
     }
+elif not DEBUG:
+    CHANNEL_LAYERS['default']['BACKEND'] = 'asgi_ipc.IPCChannelLayer'

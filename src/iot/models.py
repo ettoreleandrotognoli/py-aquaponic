@@ -544,7 +544,7 @@ class PID(models.Model):
         return self.name
 
 
-class TriggerCondition(models.Model):
+class TriggerCondition(ValidateOnSaveMixin, models.Model):
     input = models.ForeignKey(
         Sensor,
     )
