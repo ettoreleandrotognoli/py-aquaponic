@@ -40,7 +40,7 @@ class TestSteinhartHart(TestCase):
             b=0.0002339,
             c=0.00000008863,
         )
-        result, time, unit = steinhart_hart.merge(SensorData(
+        result, time, unit = steinhart_hart.merge(None, SensorData(
             value=vo,
             measure_unit=volt,
         ), [])
@@ -69,7 +69,7 @@ class TestBetaFactor(TestCase):
             r=thermistor,
             t=298.15,
         )
-        result, time, unit = beta_factor.merge(SensorData(
+        result, time, unit = beta_factor.merge(None, SensorData(
             value=vo,
             measure_unit=volt,
         ), [])
