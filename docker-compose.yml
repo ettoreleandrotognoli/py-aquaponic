@@ -5,8 +5,8 @@ services:
     ports:
       - "${PORT}:${PORT}"
     volumes:
-      - .:/code
-    working_dir: /code
+      - ./src:/opt/py-aquaponic/
+    working_dir: /opt/py-aquaponic/
     environment:
       - "DEBUG=${DEBUG}"
       - "SSL=${SSL}"
@@ -17,8 +17,8 @@ services:
   worker:
     build: .
     volumes:
-      - .:/code
-    working_dir: /code
+      - ./src:/opt/py-aquaponic/
+    working_dir: /opt/py-aquaponic/
     environment:
       - "DEBUG=${DEBUG}"
       - "DATABASE_URL=postgres://postgres:postgres@sql_db/postgres"
@@ -29,5 +29,7 @@ services:
     image: "redis:alpine"
   sql_db:
     image: "postgres:alpine"
+    ports:
+      - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=postgres
