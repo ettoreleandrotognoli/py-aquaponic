@@ -1,0 +1,13 @@
+language: python
+sudo: false
+python:
+  - 2.7
+  - 3.4
+  - pypy
+install:
+  - pip install -U pip six setuptools codecov
+  - pip install -Ur requirements.txt
+  - pip install -Ur requirements-dev.txt
+script: make coverage
+after_success:
+  - codecov

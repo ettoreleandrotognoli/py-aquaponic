@@ -8,8 +8,19 @@ bower: src/iot/bower.json
 	cd src/iot && bower install
 
 static:
-	venv/bin/python manage.py collectstatic --no-input -i bower
-	venv/bin/python manage.py collectstatic --no-input -i "[^(bower)]" --no-post-process
+	venv/bin/python src/manage.py collectstatic --no-input -i bower
+	venv/bin/python src/manage.py collectstatic --no-input -i "[^(bower)]" --no-post-process
+
+test:
+	venv/bin/python src/manage.py test src/
+
+.coverage:
+	venv/bin/coverage run src/manage.py test src/
+
+coverage.xml: .coverage
+	venv/bin/coverage xml --include="src/*"
+
+coverage: coverage.xml
 
 
 clean:

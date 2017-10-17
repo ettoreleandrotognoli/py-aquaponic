@@ -4,3 +4,5 @@
 venv*/
 /src/static/
 **/static/bower/**
+.coverage
+coverage.xml
