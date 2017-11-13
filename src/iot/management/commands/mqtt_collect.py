@@ -17,6 +17,8 @@ def build_collector(collect_key: str):
             data = data.get(k, None)
         return k
 
+    return collector
+
 
 class Command(BaseCommand):
     help = 'Start a daemon to listening a mqtt broker'
@@ -86,7 +88,7 @@ class Command(BaseCommand):
             except Exception as ex:
                 self.stdout.write(self.style.ERROR(ex))
                 return
-            
+
             data = collector(data)
             if not isinstance(data, dict):
                 data = dict(value=data)
