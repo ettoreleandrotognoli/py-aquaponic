@@ -1,4 +1,4 @@
-from django.test import TestCase
+from channels.tests import ChannelTestCase as TestCase
 
 
 class ActuatorTest(TestCase):

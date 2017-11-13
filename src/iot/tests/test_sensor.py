@@ -1,13 +1,16 @@
 import random
+from channels.tests import ChannelTestCase as TestCase
 from django.contrib.auth import get_user_model
 from django.test import Client
-from django.test import TestCase
 from django.urls import reverse
-from iot.models import Sensor, Position, MeasureUnit
 from model_mommy import mommy
+
+from iot.models import Sensor, Position, MeasureUnit
 
 
 class TestSensor(TestCase):
+    client = None
+
     def setUp(self):
         self.client = Client()
         self.client.force_login(get_user_model().objects.get_or_create(username='testuser')[0])

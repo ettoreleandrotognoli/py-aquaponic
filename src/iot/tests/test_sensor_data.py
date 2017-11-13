@@ -1,4 +1,4 @@
-from django.test import TestCase
+from channels.tests import ChannelTestCase as TestCase
 from iot.models import Sensor, SensorData, Position, MeasureUnit
 from model_mommy import mommy
 

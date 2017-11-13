@@ -2,8 +2,22 @@ import json
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
-from iot.models import Sensor
 from paho.mqtt import client as mqtt
+
+from iot.models import Sensor
+
+
+def build_collector(collect_key: str):
+    keys = collect_key.split('.')
+
+    def collector(data: dict):
+        for k in keys:
+            if not data:
+                return data
+            data = data.get(k, None)
+        return data
+
+    return collector
 
 
 class Command(BaseCommand):
@@ -42,7 +56,18 @@ class Command(BaseCommand):
             dest='user_pass',
         )
 
-    def _handle(self, host, port, topic, user_name, user_pass, **kwargs):
+        parser.add_argument(
+            '--collect-key',
+            dest='collect_key',
+        )
+
+    def _handle(self, host, port, topic, user_name, user_pass, collect_key, **kwargs):
+
+        if collect_key:
+            collector = build_collector(collect_key)
+        else:
+            collector = lambda x: x
+
         def on_connect(mqtt_client: mqtt.Client, userdata, flag, rc):
             mqtt_client.subscribe(topic)
 
@@ -64,8 +89,9 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(ex))
                 return
 
+            data = collector(data)
             if not isinstance(data, dict):
-                data = dict(value=data)
+                data = dict(value=float(data))
             sensor.push_data(**data)
 
         client = mqtt.Client()

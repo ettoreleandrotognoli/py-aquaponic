@@ -1,5 +1,4 @@
-from django.test import TestCase
-
+from channels.tests import ChannelTestCase as TestCase
 from iot.fusion.electronic import VoltageDivider
 from iot.fusion.thermistor import SteinhartHart
 from iot.fusion.thermistor import BetaFactor
