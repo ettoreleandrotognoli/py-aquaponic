@@ -10,12 +10,12 @@ from iot.models import Sensor
 def build_collector(collect_key: str):
     keys = collect_key.split('.')
 
-    def collector(data):
+    def collector(data: dict):
         for k in keys:
             if not data:
                 return data
             data = data.get(k, None)
-        return k
+        return data
 
     return collector
 
