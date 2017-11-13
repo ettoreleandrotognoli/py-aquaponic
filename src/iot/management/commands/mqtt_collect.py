@@ -91,7 +91,7 @@ class Command(BaseCommand):
 
             data = collector(data)
             if not isinstance(data, dict):
-                data = dict(value=data)
+                data = dict(value=float(data))
             sensor.push_data(**data)
 
         client = mqtt.Client()
