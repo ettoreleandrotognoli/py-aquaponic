@@ -3,6 +3,7 @@
 **.sqlite*
 venv*/
 /src/static/
+/htmlcov/
 **/static/bower/**
 .coverage
 coverage.xml
