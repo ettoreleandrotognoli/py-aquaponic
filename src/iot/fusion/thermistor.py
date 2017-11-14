@@ -1,11 +1,8 @@
-from .merger import Merger
 import math
-from .electronic import VoltageDivider
-from iot.models import MeasureUnit
 
-temperature_units = dict(
-    [(unit.name, unit) for unit in MeasureUnit.objects.filter(magnitude__name='temperature')]
-)
+from iot.models import MeasureUnit
+from .electronic import VoltageDivider
+from .merger import Merger
 
 
 def ln(value):
@@ -25,6 +22,9 @@ class SteinhartHart(Merger):
         self.resistor = resistor
         self.tension = tension
         self.proportional = proportional
+        self.temperature_units = dict(
+            [(unit.name, unit) for unit in MeasureUnit.objects.filter(magnitude__name='temperature')]
+        )
 
     def merge(self, output_sensor, sensor_data, sensors):
         value = sensor_data.value
@@ -36,8 +36,8 @@ class SteinhartHart(Merger):
             voltage_divider.r1 = self.resistor
             r = voltage_divider.calc_r2()
         t = 1.0 / (self.a + self.b * ln(r) + self.c * ln(r) ** 3)
-        output_unit = temperature_units[self.output]
-        t = output_unit.convert(t, temperature_units['kelvin'])
+        output_unit = self.temperature_units[self.output]
+        t = output_unit.convert(t, self.temperature_units['kelvin'])
         return t, sensor_data.time, output_unit
 
 
@@ -54,6 +54,9 @@ class BetaFactor(Merger):
         self.tension = tension
         self.output = output
         self.proportional = proportional
+        self.temperature_units = dict(
+            [(unit.name, unit) for unit in MeasureUnit.objects.filter(magnitude__name='temperature')]
+        )
 
     def merge(self, output_sensor, sensor_data, sensors):
         value = sensor_data.value
@@ -65,6 +68,6 @@ class BetaFactor(Merger):
             voltage_divider.r1 = self.resistor
             r = voltage_divider.calc_r2()
         t = 1.0 / (1.0 / self.t + 1.0 / self.b * ln(r / self.r))
-        output_unit = temperature_units[self.output]
-        t = output_unit.convert(t, temperature_units['kelvin'])
+        output_unit = self.temperature_units[self.output]
+        t = output_unit.convert(t, self.temperature_units['kelvin'])
         return t, sensor_data.time, output_unit

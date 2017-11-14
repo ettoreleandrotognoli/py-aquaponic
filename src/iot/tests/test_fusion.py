@@ -1,10 +1,9 @@
+from django.utils.functional import SimpleLazyObject
 from channels.tests import ChannelTestCase as TestCase
 from iot.fusion.electronic import VoltageDivider
 from iot.fusion.thermistor import SteinhartHart
 from iot.fusion.thermistor import BetaFactor
 from iot.models import SensorData, MeasureUnit
-
-volt = MeasureUnit.objects.get(name='volt')
 
 
 class TestVoltageDivider(TestCase):
@@ -19,6 +18,11 @@ class TestVoltageDivider(TestCase):
 
 
 class TestSteinhartHart(TestCase):
+    volt = None
+
+    def setUp(self):
+        self.volt = MeasureUnit.objects.get(name='volt')
+
     def test_ntc_10k(self):
         tension = 5
         thermistor = 10000.0
@@ -41,13 +45,18 @@ class TestSteinhartHart(TestCase):
         )
         result, time, unit = steinhart_hart.merge(None, SensorData(
             value=vo,
-            measure_unit=volt,
+            measure_unit=self.volt,
         ), [])
         self.assertEqual(unit.name, 'celsius')
         self.assertAlmostEqual(25, result, delta=0.1)
 
 
 class TestBetaFactor(TestCase):
+    volt = None
+
+    def setUp(self):
+        self.volt = MeasureUnit.objects.get(name='volt')
+
     def test_ntc_10k_3950(self):
         tension = 5
         thermistor = 10000.0
@@ -70,7 +79,7 @@ class TestBetaFactor(TestCase):
         )
         result, time, unit = beta_factor.merge(None, SensorData(
             value=vo,
-            measure_unit=volt,
+            measure_unit=self.volt,
         ), [])
         self.assertEqual(unit.name, 'celsius')
         self.assertAlmostEqual(25, result, delta=0.1)

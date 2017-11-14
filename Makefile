@@ -24,5 +24,5 @@ coverage: coverage.xml
 
 
 clean:
-	rm -Rf static
+	rm -Rf src/static
 	rm -f .coverage coverage.xml
