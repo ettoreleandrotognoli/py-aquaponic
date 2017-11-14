@@ -12,3 +12,15 @@ class LowPass(Merger):
             return sensor_data.value, sensor_data.time, sensor_data.measure_unit
         value = (sensor_data.value * self.high + last_value.value * self.low) / (self.high + self.low)
         return value, sensor_data.time, sensor_data.measure_unit
+
+
+class HighPass(Merger):
+    def __init__(self):
+        pass
+
+    def merge(self, output_sensor, sensor_data, sensors):
+        last_value = output_sensor.data.order_by('-time').first()
+        if not last_value:
+            return 0, sensor_data.time, sensor_data.measure_unit
+        value = sensor_data.value - last_value.value
+        return value, sensor_data.time, sensor_data.measure_unit

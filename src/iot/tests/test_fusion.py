@@ -1,8 +1,8 @@
-from django.utils.functional import SimpleLazyObject
 from channels.tests import ChannelTestCase as TestCase
+
 from iot.fusion.electronic import VoltageDivider
-from iot.fusion.thermistor import SteinhartHart
 from iot.fusion.thermistor import BetaFactor
+from iot.fusion.thermistor import SteinhartHart
 from iot.models import SensorData, MeasureUnit
 
 

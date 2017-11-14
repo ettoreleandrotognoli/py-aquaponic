@@ -1,3 +1,5 @@
+CERT_CN?=py-aquaponic.org
+
 venv: requirements.txt requirements-dev.txt
 	virtualenv venv -p python3
 	python -m pip install -U pip
@@ -22,6 +24,13 @@ coverage.xml: .coverage
 
 coverage: coverage.xml
 
+%.key:
+	openssl genrsa -out $@ 4096
+
+%.crt: %.key
+	openssl req -new -x509 -key $^ -out $@ -days 3650 -subj /CN=${CERT_CN}
+
+ssl: config/ssl/server.crt config/ssl/server.key
 
 clean:
 	rm -Rf src/static

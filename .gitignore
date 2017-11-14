@@ -1,9 +1,11 @@
-.idea
+.*
+!.gitignore
+!.env.example
+!.travis.yml
 **.py[cod]
 **.sqlite*
 venv*/
 /src/static/
 /htmlcov/
 **/static/bower/**
-.coverage
 coverage.xml
