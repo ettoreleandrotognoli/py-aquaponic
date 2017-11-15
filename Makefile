@@ -1,10 +1,11 @@
+PYTHON=python3.6
 CERT_CN?=py-aquaponic.org
 
 venv: requirements.txt requirements-dev.txt
-	virtualenv venv -p python3
-	python -m pip install -U pip
-	python -m pip install -Ur requirements.txt
-	python -m pip install -Ur requirements-dev.txt
+	virtualenv venv -p ${PYTHON}
+	venv/bin/python -m pip install -U pip
+	venv/bin/python -m pip install -Ur requirements.txt
+	venv/bin/python -m pip install -Ur requirements-dev.txt
 
 bower: src/iot/bower.json
 	cd src/iot && bower install

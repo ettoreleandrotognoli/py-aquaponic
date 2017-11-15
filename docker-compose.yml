@@ -3,7 +3,7 @@ services:
   web:
     build: .
     ports:
-      - "${WEB_PORT}:443"
+      - "${HTTPS_PORT}:443"
     volumes:
       - ./src:/opt/py-aquaponic/
       - ./config/ssl:/opt/py-aquaponic/ssl
@@ -17,7 +17,7 @@ services:
       - "DATABASE_URL=postgres://postgres:postgres@sql-db/postgres"
       - "REDIS_URL=redis://redis"
       - "DJANGO_SETTINGS_MODULE=core.settings"
-    command: bash -c "sleep 5 && /usr/local/bin/pypy3 manage.py makemigrations && /usr/local/bin/pypy3 manage.py migrate && daphne -e ssl:443:privateKey=ssl/server.key:certKey=ssl/server.crt core.asgi:channel_layer --bind 0.0.0.0 -v2"
+    command: bash -c "sleep 5 && /usr/local/bin/pypy3 manage.py makemigrations && /usr/local/bin/pypy3 manage.py migrate && daphne -e ssl:443:privateKey=ssl/server.key:certKey=ssl/server.crt core.asgi:channel_layer --port ${HTTP_PORT} --bind 0.0.0.0 -v2"
   worker:
     build: .
     volumes:
