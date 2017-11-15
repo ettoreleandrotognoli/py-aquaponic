@@ -4,6 +4,7 @@
     .dashboard [class*=col-] {
         padding: 0;
     }
+
 </style>
 {% endblock %}
 {% block body %}
@@ -13,7 +14,7 @@
         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
             <object type="image/svg+xml" class="chart"
                     sensor-data="{{sensor.name}}"
-                    data="{% url 'iot-api:sensor-chart' pk=sensor.pk %}?limit=10"></object>
+                    data="{% url 'iot-api:sample-sensor-chart' pk=sensor.pk %}?limit=10"></object>
         </div>
         {% endfor %}
     </div>
@@ -62,5 +63,6 @@
             }
         };
     });
+
 </script>
 {% endblock %}

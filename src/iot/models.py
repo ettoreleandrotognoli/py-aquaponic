@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.timezone import timedelta
+from django.utils.timezone import datetime
 from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy as _
 from functools import reduce
@@ -134,10 +135,35 @@ class Position(models.Model):
         return '%f° %f° %f' % (self.latitude, self.longitude, self.altitude)
 
 
+class SensorDataQuerySet(models.QuerySet):
+    def time_line(self, begin: datetime, end: datetime, interval: timedelta = timedelta(seconds=60 * 60)):
+        if not isinstance(interval, timedelta):
+            interval = timedelta(seconds=interval)
+        current = begin
+        while current < end:
+            next_current = current + interval
+            yield self.all().filter(
+                time__gte=current,
+                time__lt=next_current,
+            )
+            current = next_current
+
+    def join(self):
+        return self.aggregate(
+            models.Avg('value'),
+            models.Min('value'),
+            models.Max('value'),
+            models.Max('time'),
+            models.Min('time'),
+        )
+
+
 class SensorData(ValidateOnSaveMixin, models.Model):
     class Meta:
         verbose_name = _('Sensor Data')
         ordering = ['-time']
+
+    objects = SensorDataQuerySet.as_manager()
 
     time = models.DateTimeField(
         default=timezone.now
