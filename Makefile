@@ -2,7 +2,7 @@ PYTHON=python3.6
 CERT_CN?=py-aquaponic.org
 
 venv: requirements.txt requirements-dev.txt
-	virtualenv venv -p ${PYTHON}
+	${PYTHON} -m venv venv
 	venv/bin/python -m pip install -U pip
 	venv/bin/python -m pip install -Ur requirements.txt
 	venv/bin/python -m pip install -Ur requirements-dev.txt
