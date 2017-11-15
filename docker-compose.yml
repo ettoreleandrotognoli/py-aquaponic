@@ -3,21 +3,21 @@ services:
   web:
     build: .
     ports:
-      - "${PORT}:443"
+      - "${WEB_PORT}:443"
     volumes:
       - ./src:/opt/py-aquaponic/
       - ./config/ssl:/opt/py-aquaponic/ssl
     working_dir: /opt/py-aquaponic/
     depends_on:
       - redis
-      - sql_db
+      - sql-db
     environment:
       - "DEBUG=${DEBUG}"
       - "SSL=${SSL}"
-      - "DATABASE_URL=postgres://postgres:postgres@sql_db/postgres"
+      - "DATABASE_URL=postgres://postgres:postgres@sql-db/postgres"
       - "REDIS_URL=redis://redis"
       - "DJANGO_SETTINGS_MODULE=core.settings"
-    command: bash -c "sleep 10 && python manage.py makemigrations && python manage.py migrate && daphne -e ssl:443:privateKey=ssl/server.key:certKey=ssl/server.crt core.asgi:channel_layer --port ${PORT} --bind 0.0.0.0 -v2"
+    command: bash -c "sleep 5 && /usr/local/bin/pypy3 manage.py makemigrations && /usr/local/bin/pypy3 manage.py migrate && daphne -e ssl:443:privateKey=ssl/server.key:certKey=ssl/server.crt core.asgi:channel_layer --bind 0.0.0.0 -v2"
   worker:
     build: .
     volumes:
@@ -26,26 +26,25 @@ services:
     depends_on:
       - web
       - redis
-      - sql_db
+      - sql-db
+      - mqtt-broker
     environment:
       - "DEBUG=${DEBUG}"
-      - "DATABASE_URL=postgres://postgres:postgres@sql_db/postgres"
+      - "DATABASE_URL=postgres://postgres:postgres@sql-db/postgres"
       - "REDIS_URL=redis://redis"
       - "DJANGO_SETTINGS_MODULE=core.settings"
     command: ["/usr/local/bin/pypy3","manage.py","runworker","-v2","--thread","${THREADS}"]
   redis:
     image: "redis:alpine"
-  mqtt:
+  mqtt-broker:
     image: eclipse-mosquitto
     volumes:
       - ./config/ssl:/opt/ssl
     ports:
       - ${MQTT_PORT}:1883
-  nosql_db:
-    - image: mongo
-  sql_db:
+  nosql-db:
+    image: mongo
+  sql-db:
     image: "postgres:alpine"
-    ports:
-      - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=postgres
