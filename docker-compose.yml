@@ -3,6 +3,7 @@ services:
   web:
     build: .
     ports:
+      - "${HTTP_PORT}:443"
       - "${HTTPS_PORT}:443"
     volumes:
       - ./src:/opt/py-aquaponic/

@@ -2,6 +2,7 @@
 !.gitignore
 !.env.example
 !.travis.yml
+!.bowerrc
 **.py[cod]
 **.sqlite*
 venv*/
