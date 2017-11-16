@@ -1,6 +1,7 @@
 dj-database-url
 Django
 pytz
+python-decouple
 jsonfield
 djangorestframework
 markdown

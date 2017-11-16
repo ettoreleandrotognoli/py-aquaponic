@@ -29,12 +29,16 @@ services:
       - redis
       - sql-db
       - mqtt-broker
+      - cache
     environment:
       - "DEBUG=${DEBUG}"
       - "DATABASE_URL=postgres://postgres:postgres@sql-db/postgres"
       - "REDIS_URL=redis://redis"
       - "DJANGO_SETTINGS_MODULE=core.settings"
+      - "MEMCACHED_URL=cache"
     command: ["/usr/local/bin/pypy3","manage.py","runworker","-v2","--thread","${THREADS}"]
+  cache:
+    image: "memcached:alpine"
   redis:
     image: "redis:alpine"
   mqtt-broker:

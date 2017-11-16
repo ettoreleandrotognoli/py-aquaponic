@@ -10,10 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
-import os
-from distutils.util import strtobool
-
 import dj_database_url
+import os
+from decouple import config
 
 try:
     from psycopg2cffi import compat
@@ -30,15 +29,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'upmxof7pp2h78tbtp9e3=q5#-%_7#rf@1!f#1r7&o#wieketxr')
+SECRET_KEY = config('SECRET_KEY', 'upmxof7pp2h78tbtp9e3=q5#-%_7#rf@1!f#1r7&o#wieketxr')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = strtobool(os.environ.get('DEBUG', 'True'))
+DEBUG = config('DEBUG', True, cast=bool)
 
-SECURE_SSL_REDIRECT = strtobool(os.environ.get('SSL', 'False'))
+SECURE_SSL_REDIRECT = config('SSL', False, cast=bool)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', '*')
 
 # Application definition
 
@@ -122,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = os.environ.get('TIMEZONE', 'UTC')
+TIME_ZONE = config('TIMEZONE', 'UTC')
 
 USE_I18N = True
 
@@ -152,6 +152,19 @@ REST_FRAMEWORK = {
     )
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/var/tmp/py-aquaponic-cache/',
+    }
+}
+
+if config('MEMCACHED_URL', False):
+    CACHES['default'] = {
+        'backend': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': config('REDIS_URL', cast=lambda v: [v.strip() for v in v.split(',')])
+    }
+
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'asgiref.inmemory.ChannelLayer',
@@ -159,10 +172,10 @@ CHANNEL_LAYERS = {
     },
 }
 
-if os.environ.get('REDIS_URL', False):
+if config('REDIS_URL', False):
     CHANNEL_LAYERS['default']['BACKEND'] = 'asgi_redis.RedisChannelLayer'
     CHANNEL_LAYERS['default']['CONFIG'] = {
-        'hosts': [os.environ.get('REDIS_URL')]
+        'hosts': config('REDIS_URL', cast=lambda v: [v.strip() for v in v.split(',')])
     }
 elif not DEBUG:
     CHANNEL_LAYERS['default']['BACKEND'] = 'asgi_ipc.IPCChannelLayer'
