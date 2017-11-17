@@ -17,6 +17,69 @@ from functools import reduce
 from jsonfield import JSONField
 
 
+class MQTTConnection(models.Model):
+    class Meta:
+        verbose_name = _('MQTT Broker Connection')
+
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name=_('Name'),
+    )
+
+    host = models.CharField(
+        max_length=255,
+        verbose_name=_('Host'),
+        default='iot.eclipse.org',
+    )
+
+    port = models.IntegerField(
+        default=1883,
+        verbose_name=_('Port'),
+    )
+
+    username = models.CharField(
+        blank=True,
+        null=True,
+    )
+
+    password = models.CharField(
+        blank=True,
+        null=True,
+    )
+
+
+class MQTTDataSource(models.Model):
+    class Meta:
+        verbose_name = _('MQTT Data Source')
+
+    active = models.BooleanField(
+        default=True,
+    )
+
+    connection = models.ForeignKey(
+        'MQTTConnection',
+    )
+
+    subscribe_topic = models.CharField(
+        max_length=255,
+        default='py-aquaponic/#'
+    )
+
+    strategy = models.CharField(
+        max_length=255,
+        verbose_name=_('Parse Strategy'),
+        choices=(
+            ('iot.data_source.mqtt.', _('Single Sensor Topic'))
+        )
+    )
+
+    strategy_options = JSONField(
+        blank=True,
+        null=True,
+    )
+
+
 class Magnitude(models.Model):
     class Meta:
         verbose_name = _('Magnitude')
@@ -207,7 +270,6 @@ class SensorData(ValidateOnSaveMixin, models.Model):
         return super(SensorData, self).clean()
 
     def __str__(self):
-
         return '%s %s' % tuple(map(str, (self.value, self.measure_unit if self.measure_unit_id else '?')))
 
 
@@ -324,6 +386,7 @@ class SensorFusion(models.Model):
             ('iot.fusion.thermistor.SteinhartHart', _('Temperatude with Steinhart-Hart (NTC Thermistor) ')),
             ('iot.fusion.thermistor.BetaFactor', _('Temperatude with Beta Factor (NTC Thermistor) ')),
             ('iot.fusion.filter.LowPass', _('Low Pass Filter')),
+            ('iot.fusion.filter.HighPass', _('High Pass Filter')),
         )
 
     )

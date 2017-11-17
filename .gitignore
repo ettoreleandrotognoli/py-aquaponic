@@ -6,7 +6,7 @@
 **.py[cod]
 **.sqlite*
 venv*/
-/src/static/
 /htmlcov/
 **/static/bower/**
 coverage.xml
+__pycache__/
