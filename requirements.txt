@@ -13,3 +13,4 @@ pygal
 pyparallel
 paho-mqtt
 pyFirmata
+iso8601
