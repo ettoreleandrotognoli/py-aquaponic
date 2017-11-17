@@ -1,15 +1,17 @@
 import pygal
-from django.template.defaultfilters import date as date_formater
 from django import forms
-from core.utils.urls import make_url
-from core.utils.views import MultipleFieldLookupMixin, TrapDjangoValidationErrorMixin
 from django.shortcuts import get_object_or_404
+from django.template.defaultfilters import date as date_formater
 from django.utils import timezone
-from iot.models import Sensor, SensorData
-from iot.pygal import PygalViewMixin
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
+
+from core.utils.forms import ISO8601Field
+from core.utils.urls import make_url
+from core.utils.views import MultipleFieldLookupMixin, TrapDjangoValidationErrorMixin
+from iot.models import Sensor
+from iot.pygal import PygalViewMixin
 from .serializers import SensorSerializer, SensorDetailSerializer, SensorDataSerializer
 
 ISO8601 = "%Y-%m-%dT%H:%M:%S.%z"
@@ -86,13 +88,11 @@ class SampleSensorChartView(PygalViewMixin, SensorViewMixin, ListAPIView):
 
 
 class SensorChartForm(forms.Form):
-    begin = forms.DateTimeField(
-        input_formats=[ISO8601],
+    begin = ISO8601Field(
         required=False,
     )
 
-    end = forms.DateTimeField(
-        input_formats=[ISO8601],
+    end = ISO8601Field(
         required=False,
     )
 
