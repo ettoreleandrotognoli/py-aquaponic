@@ -70,7 +70,7 @@ class MQTTDataSource(models.Model):
         max_length=255,
         verbose_name=_('Parse Strategy'),
         choices=(
-            ('iot.data_source.mqtt.', _('Single Sensor Topic'))
+            ('iot.data_source.mqtt.MQTTSingleTopicSensor', _('Single Sensor Topic'))
         )
     )
 
