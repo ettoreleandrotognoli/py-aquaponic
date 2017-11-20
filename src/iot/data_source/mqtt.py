@@ -1,8 +1,10 @@
 import json
 from typing import Iterator
 
+from django.core.exceptions import ObjectDoesNotExist
 from paho.mqtt import client as mqtt
 
+from iot.models import Sensor
 from iot.models import SensorData
 
 
@@ -30,4 +32,19 @@ class JSONDataSourceStrategy(MQTTDataSourceStrategy):
 
 
 class MQTTSingleTopicSensor(JSONDataSourceStrategy):
-    pass
+    def __init__(self, topic_index: int = -1, data_key: str = None):
+        self.topic_index = topic_index
+        self.data_key = data_key.split('.')
+
+    def parse_data(self, topic, data) -> Iterator[SensorData]:
+        sensor_name = topic.split('/')[self.topic_index]
+
+        for key in self.data_key:
+            data = data.get(key, {})
+        if not data:
+            return []
+        try:
+            sensor = Sensor.objects.get(name=sensor_name)
+            return [sensor.init_data(value=data)]
+        except ObjectDoesNotExist as ex:
+            return []
