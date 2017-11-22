@@ -23,6 +23,7 @@ def forwards_func(apps, schema_editor):
         Magnitude(name='luminous flux', description=''),
         Magnitude(name='lighting', description=''),
         Magnitude(name='proportion', description=''),
+        Magnitude(name='volume', description=''),
     ])
 
     MeasureUnit = apps.get_model('iot', 'MeasureUnit')
@@ -97,6 +98,12 @@ def forwards_func(apps, schema_editor):
     proportion = Magnitude.objects.using(db_alias).get(name='proportion')
     MeasureUnit.objects.using(db_alias).bulk_create([
         MeasureUnit(name='percentage', symbol='%', magnitude=proportion)
+    ])
+
+    volume = Magnitude.objects.using(db_alias).get(name='volume')
+    MeasureUnit.objects.using(db_alias).bulk_create([
+        MeasureUnit(name='cubic meters', symbol='m³', magnitude=volume),
+        MeasureUnit(name='liters', symbol='m³', magnitude=volume),
     ])
 
     ConversionFormula = apps.get_model('iot', 'ConversionFormula')
