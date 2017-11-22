@@ -125,6 +125,13 @@ def forwards_func(apps, schema_editor):
         ConversionFormula(from_unit=hour, to_unit=minute, formula='%f* 60'),
     ])
 
+    MQTTConnection = apps.get_model('iot', 'MQTTConnection')
+    MQTTConnection.objects.using(db_alias).bulk_create([
+        MQTTConnection(host='broker.hivemq.com', name='HiveMQ'),
+        MQTTConnection(host='test.mosquitto.org', name='Mosquitto'),
+        MQTTConnection(host='iot.eclipse.org', name='Eclipse'),
+    ])
+
 
 def reverse_func(apps, schema_editor):
     db_alias = schema_editor.connection.alias
