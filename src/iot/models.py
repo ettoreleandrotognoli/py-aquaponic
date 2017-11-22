@@ -3,18 +3,20 @@ from pydoc import locate
 from uuid import uuid4 as unique
 
 import re
-from core.utils.models import ValidateOnSaveMixin
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from django.utils.timezone import timedelta
 from django.utils.timezone import datetime
+from django.utils.timezone import timedelta
 from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy as _
 from functools import reduce
 from jsonfield import JSONField
+from paho.mqtt import client as mqtt
+
+from core.utils.models import ValidateOnSaveMixin
 
 
 class MQTTConnection(models.Model):
@@ -48,13 +50,27 @@ class MQTTConnection(models.Model):
         null=True,
     )
 
+    def config(self, mqtt_client: mqtt.Client):
+        if self.username and self.password:
+            mqtt_client.username_pw_set(self.username, self.password)
+        mqtt_client.connect(
+            self.host,
+            self.port,
+        )
+
 
 class MQTTDataSource(models.Model):
     class Meta:
         verbose_name = _('MQTT Data Source')
 
+    mqtt_client = None
+
     active = models.BooleanField(
         default=True,
+    )
+
+    running = models.BooleanField(
+        default=False,
     )
 
     connection = models.ForeignKey(
@@ -64,6 +80,15 @@ class MQTTDataSource(models.Model):
     subscribe_topic = models.CharField(
         max_length=255,
         default='py-aquaponic/#'
+    )
+
+    qos = models.IntegerField(
+        choices=(
+            (0, '0'),
+            (1, '1'),
+            (2, '2'),
+        ),
+        default=0,
     )
 
     strategy = models.CharField(
@@ -78,6 +103,53 @@ class MQTTDataSource(models.Model):
         blank=True,
         null=True,
     )
+
+    def load_strategy(self):
+        strategy_class = locate(self.strategy)
+        strategy_instance = strategy_class(**self.strategy_options)
+        return strategy_instance
+
+    def mqtt_on_connect(self, mqtt_client: mqtt.Client, userdata, flag, rc):
+        mqtt_client.subscribe(self.subscribe_topic, self.qos)
+
+    def mqtt_on_message(self, mqtt_client: mqtt.Client, userdata, msg):
+        strategy = self.load_strategy()
+        for sensor_data in strategy.parse(mqtt_client, userdata, msg):
+            sensor_data.save()
+
+    def make_client(self) -> mqtt.Client:
+        mqtt_client = mqtt.Client()
+        mqtt_client.on_connect = self.mqtt_on_connect
+        mqtt_client.on_message = self.mqtt_on_message
+        self.connection.config(mqtt_client)
+        return mqtt_client
+
+    def start(self):
+        rows_affected = MQTTDataSource.objects.filter(
+            pk=self.pk,
+            running=False,
+        ).update(
+            running=True
+        )
+        if rows_affected == 0:
+            return
+        if rows_affected != 1:
+            raise Exception()
+        self.mqtt_client = self.make_client()
+        self.mqtt_client.loop_start()
+
+    def stop(self):
+        rows_affected = MQTTDataSource.objects.filter(
+            pk=self.pk,
+            running=True,
+        ).update(
+            running=False
+        )
+        if rows_affected == 0:
+            return
+        if rows_affected != 1:
+            raise Exception()
+        self.mqtt_client.loop_stop()
 
 
 class Magnitude(models.Model):
