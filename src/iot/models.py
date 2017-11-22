@@ -43,12 +43,17 @@ class MQTTConnection(models.Model):
     username = models.CharField(
         blank=True,
         null=True,
+        max_length=255,
     )
 
     password = models.CharField(
         blank=True,
         null=True,
+        max_length=255,
     )
+
+    def __str__(self):
+        return self.name
 
     def config(self, mqtt_client: mqtt.Client):
         if self.username and self.password:
@@ -95,7 +100,7 @@ class MQTTDataSource(models.Model):
         max_length=255,
         verbose_name=_('Parse Strategy'),
         choices=(
-            ('iot.data_source.mqtt.MQTTSingleTopicSensor', _('Single Sensor Topic'))
+            ('iot.data_source.mqtt.MQTTSingleTopicSensor', _('Single Sensor Topic')),
         )
     )
 
