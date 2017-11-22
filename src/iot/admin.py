@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from iot import models
 
 
@@ -145,4 +146,31 @@ class TriggerAdmin(admin.ModelAdmin):
     ]
     search_fields = [
         'conditions__input__name',
+    ]
+
+
+@admin.register(models.MQTTConnection)
+class MQTTConnection(admin.ModelAdmin):
+    list_display = [
+        'name',
+        'host',
+        'username',
+    ]
+    search_fields = [
+        'name',
+        'host',
+        'username',
+    ]
+
+
+@admin.register(models.MQTTDataSource)
+class MQTTDataSourceAdmin(admin.ModelAdmin):
+    list_display = [
+        'connection',
+        'strategy',
+        'strategy_options',
+    ]
+    list_filter = [
+        'connection',
+        'strategy',
     ]
