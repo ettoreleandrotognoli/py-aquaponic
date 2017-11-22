@@ -32,19 +32,20 @@ class JSONDataSourceStrategy(MQTTDataSourceStrategy):
 
 
 class MQTTSingleTopicSensor(JSONDataSourceStrategy):
-    def __init__(self, topic_index: int = -1, data_key: str = None):
+    def __init__(self, topic_index: int = -1, data_key: str = None, **kwargs):
+        super().__init__(**kwargs)
         self.topic_index = topic_index
         self.data_key = data_key.split('.')
 
     def parse_data(self, topic, data) -> Iterator[SensorData]:
         sensor_name = topic.split('/')[self.topic_index]
-
+        value = data
         for key in self.data_key:
-            data = data.get(key, {})
-        if not data:
+            value = value.get(key, {})
+        if not value:
             return []
         try:
             sensor = Sensor.objects.get(name=sensor_name)
-            return [sensor.init_data(value=data)]
+            return [sensor.init_data(value=value, raw={'topic': topic, 'data': data})]
         except ObjectDoesNotExist as ex:
             return []
