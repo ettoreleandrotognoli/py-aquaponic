@@ -3,6 +3,7 @@ from pydoc import locate
 from uuid import uuid4 as unique
 
 import re
+from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -17,6 +18,13 @@ from jsonfield import JSONField
 from paho.mqtt import client as mqtt
 
 from core.utils.models import ValidateOnSaveMixin
+
+
+def generic_consumer(message):
+    model = apps.get_model(message.content['model'])
+    instance = model.objects.get(pk=message.content['pk'])
+    method = getattr(instance, message.content['method'])
+    method(*message.content['args'], **message.content['kwargs'])
 
 
 class MQTTConnection(models.Model):
@@ -129,32 +137,95 @@ class MQTTDataSource(models.Model):
         self.connection.config(mqtt_client)
         return mqtt_client
 
-    def start(self):
+    def get_channel(self):
+        return 'mqtt_data_source_%d' % self.pk
+
+    channel = property(get_channel)
+
+    def consumer(self, message):
+        method = getattr(self, message.content['method'])
+        method(*message.content['args'], **message.content['kwargs'])
+
+    def _acquire(self):
         rows_affected = MQTTDataSource.objects.filter(
             pk=self.pk,
             running=False,
         ).update(
             running=True
         )
-        if rows_affected == 0:
-            return
-        if rows_affected != 1:
-            raise Exception()
-        self.mqtt_client = self.make_client()
-        self.mqtt_client.loop_start()
+        return rows_affected
 
-    def stop(self):
+    def _release(self):
         rows_affected = MQTTDataSource.objects.filter(
             pk=self.pk,
             running=True,
         ).update(
             running=False
         )
+        return rows_affected
+
+    def start(self):
+        rows_affected = self._acquire()
+        if rows_affected == 0:
+            return
+        if rows_affected != 1:
+            raise Exception()
+        try:
+            from channels.asgi import channel_layers
+            from channels import route
+            from channels import DEFAULT_CHANNEL_LAYER
+            channel_layer = channel_layers[DEFAULT_CHANNEL_LAYER]
+            if self.mqtt_client is None:
+                channel_layer.router.add_route(route(self.channel, self.consumer))
+            self.mqtt_client = self.make_client()
+            self.mqtt_client.loop_start()
+        except:
+            self._release()
+
+    def restart(self):
+        self.stop()
+        self.start()
+
+    def stop(self):
+        rows_affected = self._release()
         if rows_affected == 0:
             return
         if rows_affected != 1:
             raise Exception()
         self.mqtt_client.loop_stop()
+
+    def send_update(self):
+        from channels import Channel
+        if not self.active:
+            if self.running:
+                self.send_stop()
+            return
+        if self.running:
+            Channel(self.channel).send(dict(
+                method='restart',
+                args=(),
+                kwargs={}
+            ))
+        else:
+            self.send_start()
+
+    def send_start(self):
+        from channels import Channel
+        Channel('iot.mqtt_data_source').send(dict(
+            model='iot.MQTTDataSource',
+            pk=self.pk,
+            method='start',
+            args=(),
+            kwargs={}
+        ))
+
+    def send_stop(self):
+        from channels import Channel
+        Channel(self.channel).send(
+            method='stop',
+            args=(),
+            kwargs={}
+        )
 
 
 class Magnitude(models.Model):

@@ -1,6 +1,8 @@
 from channels.routing import route
+
 from iot.models import SensorData
 from iot.models import Trigger
+from iot.models import generic_consumer
 
 
 def update_fusion(message):
@@ -34,4 +36,5 @@ channel_routing = [
     route('iot.update_fusion', update_fusion),
     route('iot.update_pid', update_pid),
     route('iot.update_trigger', update_trigger),
+    route('iot.mqtt_data_source', generic_consumer),
 ]
