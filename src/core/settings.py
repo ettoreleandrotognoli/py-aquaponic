@@ -85,6 +85,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
+ASGI_APPLICATION = 'core.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -167,13 +168,11 @@ if config('MEMCACHED_URL', False):
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'asgiref.inmemory.ChannelLayer',
-        'ROUTING': 'core.routing.channel_routing',
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
-
 if config('REDIS_URL', False):
-    CHANNEL_LAYERS['default']['BACKEND'] = 'asgi_redis.RedisChannelLayer'
+    CHANNEL_LAYERS['default']['BACKEND'] = 'channels_redis.core.RedisChannelLayer'
     CHANNEL_LAYERS['default']['CONFIG'] = {
         'hosts': config('REDIS_URL', cast=lambda v: [v.strip() for v in v.split(',')])
     }

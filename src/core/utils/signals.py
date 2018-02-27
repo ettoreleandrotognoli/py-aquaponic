@@ -21,7 +21,7 @@ def try_signal(signal_handler):
     def wrapper(*args, **kwargs):
         try:
             return signal_handler(*args, **kwargs)
-        except Exception:
+        except Exception as ex:
             logging.exception('Error on "%s" signal' % signal_handler.__name__)
             return None
 

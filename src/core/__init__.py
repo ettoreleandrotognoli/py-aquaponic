@@ -13,7 +13,12 @@ class JSONFieldSerializer(FieldSerializer):
         return obj
 
     def to_internal_value(self, data):
-        return json.loads(data)
+        if not isinstance(data, str):
+            return data
+        try:
+            return json.loads(data)
+        except:
+            return data
 
 
 serializer_field_mapping = {

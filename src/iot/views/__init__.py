@@ -3,4 +3,6 @@ from .dashboard import urlpatterns as dashboard_urls
 from .pid import urlpatterns as pid_urls
 from .sensor import urlpatterns as sensor_urls
 
+app_name = 'IoT WebApp'
+
 urlpatterns = sensor_urls + dashboard_urls + actuator_urls + pid_urls

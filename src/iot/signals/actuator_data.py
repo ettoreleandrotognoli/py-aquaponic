@@ -1,9 +1,14 @@
+import json
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from iot.models import ActuatorData
+
 from core.utils.signals import try_signal, disable_for_loaddata
-import json
-from channels import Group as WSGroup
+from iot.models import ActuatorData
+
+channel_layer = get_channel_layer()
 
 
 @receiver(post_save, sender=ActuatorData)
@@ -12,11 +17,9 @@ from channels import Group as WSGroup
 def ws_update(instance, created, **kwargs):
     if not created:
         return
-    ws_group = WSGroup('iot')
     data = json.dumps(dict(
-        type='actuator-data',
         name=instance.actuator.name,
         endpoint=instance.actuator.endpoint,
         value=instance.value,
     ))
-    ws_group.send(dict(text=data))
+    async_to_sync(channel_layer.group_send)('iot.broadcast', dict(type='actuator_data', text=data))

@@ -37,7 +37,7 @@ class PygalViewMixin(object):
         return self.chart
 
     def get_chart_kwargs(self):
-        options = dict(self.chart_options) or {}
+        options = {} if self.chart_options is None else dict(self.chart_options)
         interpolate = self.request.GET.get('interpolate', None)
         if interpolate and interpolate in allowed_interpolations:
             options['interpolate'] = interpolate

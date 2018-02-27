@@ -9,6 +9,7 @@ django-filter
 coreapi
 pygments
 channels
+channels_redis
 pygal
 pyparallel
 paho-mqtt

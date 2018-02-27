@@ -1,6 +1,21 @@
-import os
-from channels.asgi import get_channel_layer
+from channels.routing import ProtocolTypeRouter
+from channels.routing import URLRouter
+from channels.http import AsgiHandler
+from channels.routing import ChannelNameRouter
+from channels.auth import AuthMiddlewareStack
+from django.urls import path
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+from iot.routing import IoTWebSocketConsumer
+from iot.routing import IoTConsumer
 
-channel_layer = get_channel_layer()
+application = ProtocolTypeRouter({
+    'http': AsgiHandler,
+    'websocket': AuthMiddlewareStack(
+        URLRouter([
+            path('', IoTWebSocketConsumer)
+        ])
+    ),
+    'channel': ChannelNameRouter({
+        'iot': IoTConsumer
+    })
+})
