@@ -8,7 +8,8 @@ markdown
 django-filter
 coreapi
 pygments
-channels
+#channels
+git+https://github.com/django/channels.git
 channels_redis
 pygal
 pyparallel

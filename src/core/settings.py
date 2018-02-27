@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
-import dj_database_url
 import os
+
+import dj_database_url
 from decouple import config
 
 try:
@@ -50,9 +51,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'channels',
     'iot',
     'aquaponic',
-    'channels',
 ]
 
 MIDDLEWARE = [
@@ -168,9 +169,10 @@ if config('MEMCACHED_URL', False):
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
 }
+
 if config('REDIS_URL', False):
     CHANNEL_LAYERS['default']['BACKEND'] = 'channels_redis.core.RedisChannelLayer'
     CHANNEL_LAYERS['default']['CONFIG'] = {

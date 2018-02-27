@@ -1,9 +1,10 @@
-from iot.models import SensorData
 import json
-from iot.models import Trigger
-from iot.models import generic_consumer
+
 from channels.consumer import AsyncConsumer
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+
+from iot.models import SensorData
+from iot.models import Trigger
 
 
 class IoTWebSocketConsumer(AsyncJsonWebsocketConsumer):
@@ -12,11 +13,13 @@ class IoTWebSocketConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         if self.scope["user"].is_anonymous:
             await self.close()
-        else:
-            await self.accept()
+            return
+        await self.accept()
         await self.channel_layer.group_add(self.groups, self.channel_name)
 
     async def disconnect(self, code):
+        if self.scope["user"].is_anonymous:
+            return
         await self.channel_layer.group_discard(self.groups, self.channel_name)
 
     async def sensor_data(self, message):
