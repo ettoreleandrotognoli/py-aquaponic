@@ -3,17 +3,18 @@ import json
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-from core.utils.signals import try_signal, disable_for_loaddata
+from core.utils.signals import safe_signal, disable_for_loaddata
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from iot.models import SensorData
+from iot.models import Trigger
 
 channel_layer = get_channel_layer()
 
 
 @receiver(post_save, sender=SensorData)
 @disable_for_loaddata
-@try_signal
+@safe_signal
 def ws_update(instance, created, **kwargs):
     if not created:
         return
@@ -27,35 +28,32 @@ def ws_update(instance, created, **kwargs):
 
 @receiver(post_save, sender=SensorData)
 @disable_for_loaddata
-@try_signal
-def update_fusion(instance, created, **kwargs):
+@safe_signal
+def update_fusion(instance: SensorData, created, **kwargs):
     if not created:
         return
-    data = json.dumps(dict(
-        sensor_data_pk=instance.pk
-    ))
-    async_to_sync(channel_layer.send)('iot', dict(type='update_fusion', text=data))
+    consumers = instance.sensor.consumers.all()
+    for consumer in consumers:
+        consumer.input_changed(instance)
 
 
 @receiver(post_save, sender=SensorData)
 @disable_for_loaddata
-@try_signal
-def update_pid(instance, created, **kwargs):
+@safe_signal
+def update_pid(instance: SensorData, created, **kwargs):
     if not created:
         return
-    data = json.dumps(dict(
-        sensor_data_pk=instance.pk
-    ))
-    async_to_sync(channel_layer.send)('iot', dict(type='update_pid', text=data))
+    pid_controllers = instance.sensor.pid_controllers.filter(active=True)
+    for pid_controller in pid_controllers:
+        pid_controller.input_changed(instance)
 
 
 @receiver(post_save, sender=SensorData)
 @disable_for_loaddata
-@try_signal
-def update_trigger(instance, created, **kwargs):
+@safe_signal
+def update_trigger(instance: SensorData, created, **kwargs):
     if not created:
         return
-    data = json.dumps(dict(
-        sensor_data_pk=instance.pk
-    ))
-    async_to_sync(channel_layer.send)('iot', dict(type='update_trigger', text=data))
+    triggers = Trigger.objects.filter(conditions__input=instance.sensor, active=True)
+    for trigger in triggers:
+        trigger.try_fire()

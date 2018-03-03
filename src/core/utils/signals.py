@@ -16,7 +16,7 @@ def disable_for_loaddata(signal_handler):
     return wrapper
 
 
-def try_signal(signal_handler):
+def safe_signal(signal_handler):
     @wraps(signal_handler)
     def wrapper(*args, **kwargs):
         try:
