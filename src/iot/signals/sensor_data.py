@@ -3,7 +3,7 @@ import json
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-from core.utils.signals import safe_signal, disable_for_loaddata
+from core.utils.signals import safe_signal, disable_for_loaddata, thread_signal
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from iot.models import SensorData
@@ -28,6 +28,7 @@ def ws_update(instance, created, **kwargs):
 
 @receiver(post_save, sender=SensorData)
 @disable_for_loaddata
+@thread_signal
 @safe_signal
 def update_fusion(instance: SensorData, created, **kwargs):
     if not created:
@@ -39,6 +40,7 @@ def update_fusion(instance: SensorData, created, **kwargs):
 
 @receiver(post_save, sender=SensorData)
 @disable_for_loaddata
+@thread_signal
 @safe_signal
 def update_pid(instance: SensorData, created, **kwargs):
     if not created:
@@ -50,6 +52,7 @@ def update_pid(instance: SensorData, created, **kwargs):
 
 @receiver(post_save, sender=SensorData)
 @disable_for_loaddata
+@thread_signal
 @safe_signal
 def update_trigger(instance: SensorData, created, **kwargs):
     if not created:
