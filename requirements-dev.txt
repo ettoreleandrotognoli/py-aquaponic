@@ -1,3 +1,2 @@
 coverage
 model-mommy
-asgi_ipc

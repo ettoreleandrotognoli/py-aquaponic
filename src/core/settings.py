@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import sys
 
 import dj_database_url
 from decouple import config
@@ -34,6 +35,8 @@ SECRET_KEY = config('SECRET_KEY', 'upmxof7pp2h78tbtp9e3=q5#-%_7#rf@1!f#1r7&o#wie
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', True, cast=bool)
+
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 SECURE_SSL_REDIRECT = config('SSL', False, cast=bool)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

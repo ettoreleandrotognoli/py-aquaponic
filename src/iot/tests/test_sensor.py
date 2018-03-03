@@ -1,5 +1,5 @@
 import random
-from channels.tests import ChannelTestCase as TestCase
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse

@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from channels.tests import ChannelTestCase as TestCase
+from django.test import TestCase
 from iot.models import ConversionFormula
 
 
