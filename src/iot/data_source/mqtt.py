@@ -38,11 +38,12 @@ class MQTTSingleTopicSensor(JSONDataSourceStrategy):
         self.data_key = data_key.split('.')
 
     def parse_data(self, topic, data) -> Iterator[SensorData]:
+        empty_dict = {}
         sensor_name = topic.split('/')[self.topic_index]
         value = data
         for key in self.data_key:
-            value = value.get(key, {})
-        if not value:
+            value = value.get(key, empty_dict)
+        if value is empty_dict:
             return []
         try:
             sensor = Sensor.objects.get(name=sensor_name)
