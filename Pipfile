@@ -6,6 +6,8 @@ verify_ssl = true
 [dev-packages]
 pylint = "*"
 model-mommy = "*"
+rope = "*"
+autopep8 = "*"
 
 [packages]
 django = "*"
@@ -23,6 +25,7 @@ pyparallel = "*"
 paho-mqtt = "*"
 pyfirmata = "*"
 channels-redis = "*"
+python-decouple = "*"
 
 [requires]
 python_version = "3.7"

@@ -1,6 +1,5 @@
 from decimal import Decimal
 from pydoc import locate
-from uuid import uuid4 as unique
 
 import re
 from core.utils.models import ValidateOnSaveMixin
@@ -8,6 +7,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.manager import BaseManager
 from django.utils import timezone
 from django.utils.timezone import timedelta
 from django.utils.translation import ugettext
@@ -16,7 +16,16 @@ from functools import reduce
 from jsonfield import JSONField
 
 
+class MagnitudeQuerySet(models.QuerySet):
+    pass
+
+class MagnitudeManager(BaseManager.from_queryset(MagnitudeQuerySet)):
+    pass
+
 class Magnitude(models.Model):
+
+    objects = MagnitudeManager()
+
     class Meta:
         verbose_name = _('Magnitude')
         ordering = ('name',)
@@ -39,7 +48,16 @@ class Magnitude(models.Model):
         return self.name
 
 
+class MeasureUnitQuerySet(models.QuerySet):
+    pass
+
+class MeasureUnitManager(BaseManager.from_queryset(MeasureUnitQuerySet)):
+    pass
+
 class MeasureUnit(models.Model):
+
+    objects = MeasureUnitManager()
+
     class Meta:
         verbose_name = _('Measure Unit')
         ordering = ('name',)
@@ -82,9 +100,12 @@ class MeasureUnit(models.Model):
 class ConversionFormulaQuerySet(models.QuerySet):
     pass
 
+class ConversionFormulaManager(BaseManager.from_queryset(ConversionFormulaQuerySet)):
+    pass
 
 class ConversionFormula(models.Model):
     DECIMAL_REGEX = re.compile(r'(\d+(.\d+)?)')
+    objects = ConversionFormulaManager()
 
     class Meta:
         verbose_name = _('Conversion Formula')
@@ -92,8 +113,6 @@ class ConversionFormula(models.Model):
         unique_together = (
             ('from_unit','to_unit',),
         )
-
-    objects = ConversionFormulaQuerySet.as_manager()
 
     from_unit = models.ForeignKey(
         MeasureUnit,
@@ -125,7 +144,16 @@ class ConversionFormula(models.Model):
         return '%s ->  %s' % tuple(map(str, (self.from_unit, self.to_unit)))
 
 
+class PositionQuerySet(models.QuerySet):
+    pass
+
+class PositionManager(BaseManager.from_queryset(PositionQuerySet)):
+    pass
+
 class Position(models.Model):
+
+    objects = PositionManager()
+
     class Meta:
         verbose_name = _('Position')
 
@@ -144,8 +172,16 @@ class Position(models.Model):
     def __str__(self) -> str:
         return '%f° %f° %f' % (self.latitude, self.longitude, self.altitude)
 
+class SensorDataQuerySet(models.QuerySet):
+    pass
+
+class SensorDataManager(BaseManager.from_queryset(SensorDataQuerySet)):
+    pass
 
 class SensorData(ValidateOnSaveMixin, models.Model):
+
+    objects = SensorDataManager()
+
     class Meta:
         verbose_name = _('Sensor Data')
         ordering = ('-time',)
@@ -199,7 +235,16 @@ class SensorData(ValidateOnSaveMixin, models.Model):
         return '%s %s' % tuple(map(str, (self.value, self.measure_unit if self.measure_unit_id else '?')))
 
 
+class SensorQuerySet(models.QuerySet):
+    pass
+
+class SensorManager(BaseManager.from_queryset(SensorQuerySet)):
+    pass
+
 class Sensor(ValidateOnSaveMixin, models.Model):
+
+    objects = SensorManager()
+
     class Meta:
         verbose_name = _('Sensor')
         ordering = ('name',)
@@ -236,13 +281,6 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-    )
-
-    endpoint = models.CharField(
-        max_length=255,
-        unique=True,
-        default=unique,
-        blank=True,
     )
 
     is_virtual = models.BooleanField(
@@ -287,7 +325,16 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         return '%s (%s)' % (self.name, self.magnitude.name)
 
 
+class SensorFusionQuerySet(models.QuerySet):
+    pass
+
+class SensorFusionManager(BaseManager.from_queryset(SensorDataQuerySet)):
+    pass
+
 class SensorFusion(models.Model):
+
+    objects =SensorFusionManager()
+
     class Meta:
         verbose_name = _('Sensor Fusion')
         ordering = ('output__name',)
@@ -332,8 +379,16 @@ class SensorFusion(models.Model):
         if value:
             self.output.push_data(value=value, time=time, measure_unit=measure_unit)
 
+class ActuatorQuerySet(models.QuerySet):
+    pass
+
+class ActuatorManager(BaseManager.from_queryset(ActuatorQuerySet)):
+    pass
 
 class Actuator(models.Model):
+
+    objects = ActuatorManager()
+
     class Meta:
         verbose_name = _('Actuator')
         ordering = ['name']
@@ -356,13 +411,6 @@ class Actuator(models.Model):
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-    )
-
-    endpoint = models.CharField(
-        max_length=255,
-        unique=True,
-        default=unique,
-        blank=True,
     )
 
     strategy = models.CharField(
@@ -423,7 +471,16 @@ class Actuator(models.Model):
         return self.name
 
 
+class ActuatorDataQuerySet(models.QuerySet):
+    pass
+
+class ActuatorDataManager(BaseManager.from_queryset(ActuatorDataQuerySet)):
+    pass
+
 class ActuatorData(models.Model):
+
+    objects = ActuatorDataManager()
+
     class Meta:
         verbose_name = _('Actuator Data')
         ordering = ('-time',)
@@ -651,7 +708,16 @@ class TriggerAction(models.Model):
         self.output.value = self.output_value
 
 
+class TriggerQuerySet(models.QuerySet):
+    pass
+
+class TriggerManager(BaseManager.from_queryset(TriggerQuerySet)):
+    pass
+
 class Trigger(models.Model):
+
+    objects = TriggerManager()
+
     active = models.BooleanField(
         default=True,
     )

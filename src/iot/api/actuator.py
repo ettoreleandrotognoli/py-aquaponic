@@ -4,6 +4,7 @@ from core.utils.views import MultipleFieldLookupMixin, TrapDjangoValidationError
 from django.shortcuts import get_object_or_404
 from iot.models import Actuator, ActuatorData
 from iot.pygal import PygalViewMixin
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
@@ -20,12 +21,10 @@ class ActuatorListView(ListCreateAPIView):
     serializer_class = ActuatorSerializer
 
 
-@URL('^actuator/(?P<endpoint>[^/]+)/$', name='actuator-detail')
 @URL('^actuator/(?P<pk>[0-9]+)/$', name='actuator-detail')
 class ActuatorDetailView(MultipleFieldLookupMixin,
                          TrapDjangoValidationErrorMixin,
                          RetrieveUpdateDestroyAPIView):
-    lookup_field = ('pk', 'endpoint',)
     queryset = Actuator.objects.all()
     serializer_class = ActuatorSerializer
 
@@ -53,13 +52,11 @@ class ActuatorViewMixin(object):
         serializer.save(actuator=self.actuator)
 
 
-@URL('^actuator-data/(?P<endpoint>[^/]+)/$', name='actuator-data')
 @URL('^actuator-data/(?P<pk>[0-9]+)/$', name='actuator-data')
 class ActuatorDataView(TrapDjangoValidationErrorMixin, ActuatorViewMixin, ListAPIView):
     serializer_class = ActuatorDataSerializer
 
 
-@URL('^actuator-chart/(?P<endpoint>[^/]+)/$', name='actuator-chart')
 @URL('^actuator-chart/(?P<pk>[0-9]+)/$', name='actuator-chart')
 class ActuatorChartView(PygalViewMixin, ActuatorViewMixin, ListAPIView):
     chart = pygal.DateTimeLine
