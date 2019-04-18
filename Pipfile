@@ -22,6 +22,7 @@ pygal = "*"
 pyparallel = "*"
 paho-mqtt = "*"
 pyfirmata = "*"
+channels-redis = "*"
 
 [requires]
 python_version = "3.7"

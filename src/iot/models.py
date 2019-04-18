@@ -19,11 +19,13 @@ from jsonfield import JSONField
 class Magnitude(models.Model):
     class Meta:
         verbose_name = _('Magnitude')
-        ordering = ['name']
+        ordering = ('name',)
+        unique_together = (
+            ('name',),
+        )
 
     name = models.CharField(
         max_length=255,
-        unique=True,
         verbose_name=_('Name'),
     )
 
@@ -40,7 +42,10 @@ class Magnitude(models.Model):
 class MeasureUnit(models.Model):
     class Meta:
         verbose_name = _('Measure Unit')
-        ordering = ['name']
+        ordering = ('name',)
+        unique_together =(
+            ('name',),
+        )
 
     symbol = models.CharField(
         max_length=8,
@@ -83,7 +88,10 @@ class ConversionFormula(models.Model):
 
     class Meta:
         verbose_name = _('Conversion Formula')
-        ordering = ['from_unit__name', 'to_unit__name']
+        ordering = ('from_unit__name', 'to_unit__name',)
+        unique_together = (
+            ('from_unit','to_unit',),
+        )
 
     objects = ConversionFormulaQuerySet.as_manager()
 
@@ -140,7 +148,7 @@ class Position(models.Model):
 class SensorData(ValidateOnSaveMixin, models.Model):
     class Meta:
         verbose_name = _('Sensor Data')
-        ordering = ['-time']
+        ordering = ('-time',)
 
     time = models.DateTimeField(
         default=timezone.now
@@ -194,7 +202,7 @@ class SensorData(ValidateOnSaveMixin, models.Model):
 class Sensor(ValidateOnSaveMixin, models.Model):
     class Meta:
         verbose_name = _('Sensor')
-        ordering = ['name']
+        ordering = ('name',)
 
     name = models.CharField(
         max_length=255,
@@ -282,7 +290,7 @@ class Sensor(ValidateOnSaveMixin, models.Model):
 class SensorFusion(models.Model):
     class Meta:
         verbose_name = _('Sensor Fusion')
-        ordering = ['output__name']
+        ordering = ('output__name',)
 
     inputs = models.ManyToManyField(
         'Sensor',
@@ -418,7 +426,7 @@ class Actuator(models.Model):
 class ActuatorData(models.Model):
     class Meta:
         verbose_name = _('Actuator Data')
-        ordering = ['-time']
+        ordering = ('-time',)
 
     time = models.DateTimeField(
         default=timezone.now
@@ -460,7 +468,7 @@ class ActuatorData(models.Model):
 class PID(models.Model):
     class Meta:
         verbose_name = _('PID')
-        ordering = ['-active', 'name']
+        ordering = ('-active', 'name',)
 
     name = models.CharField(
         max_length=255,
@@ -611,7 +619,7 @@ class TriggerCondition(ValidateOnSaveMixin, models.Model):
         else:
             params = dict(p=params)
         params.update(dict(s=sensor_value))
-        return eval(self.check_script, globals(), params)
+        return eval(self.check_script, {}, params)
 
 
 class TriggerAction(models.Model):
