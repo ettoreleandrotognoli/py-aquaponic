@@ -12,7 +12,8 @@ class Command(BaseCommand):
         parser.add_argument(
             '--sensor-name',
             dest='sensor_name',
-            help='Sensor name'
+            help='Sensor name',
+            required=True
         )
 
         parser.add_argument(
@@ -77,11 +78,15 @@ class Command(BaseCommand):
         if created:
             self.stdout.write(self.style.SUCCESS('Sensor %s created' % sensor_name))
         value = random.uniform(min_value, max_value)
-        for x in range(limit):
-            new_value = random.uniform(min_value, max_value)
-            value = (value * low_pass + new_value) / (low_pass + 1)
-            sensor.push_data(value=value)
-            time.sleep(interval)
+        try:
+            for x in range(limit):
+                new_value = random.uniform(min_value, max_value)
+                value = (value * low_pass + new_value) / (low_pass + 1)
+                sensor.push_data(value=value)
+                self.stdout.write(self.style.SUCCESS('.'))
+                time.sleep(interval)
+        except KeyboardInterrupt:
+            pass
 
     def handle(self, *args, **options):
         self._handle(**options)
