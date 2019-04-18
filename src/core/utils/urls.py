@@ -1,7 +1,4 @@
-# -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
-from collections import Iterable
+from typing import Iterable
 from django.conf.urls import url
 
 

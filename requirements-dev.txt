@@ -1,2 +1,0 @@
-model-mommy
-asgi_ipc

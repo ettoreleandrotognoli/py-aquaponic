@@ -1,6 +1,6 @@
-import os
-from channels.asgi import get_channel_layer
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
-
-channel_layer = get_channel_layer()
+application = ProtocolTypeRouter({
+    # Empty for now (http->django views is added by default)
+})

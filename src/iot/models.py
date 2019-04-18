@@ -60,7 +60,8 @@ class MeasureUnit(models.Model):
 
     magnitude = models.ForeignKey(
         Magnitude,
-        related_name='measures_units'
+        related_name='measures_units',
+        on_delete=models.CASCADE,
     )
 
     def convert(self, value, unit):
@@ -89,11 +90,13 @@ class ConversionFormula(models.Model):
     from_unit = models.ForeignKey(
         MeasureUnit,
         related_name='to_formulas',
+        on_delete=models.CASCADE,
     )
 
     to_unit = models.ForeignKey(
         MeasureUnit,
-        related_name='from_formulas'
+        related_name='from_formulas',
+        on_delete=models.CASCADE,
     )
 
     formula = models.TextField(
@@ -146,6 +149,7 @@ class SensorData(ValidateOnSaveMixin, models.Model):
     sensor = models.ForeignKey(
         'Sensor',
         related_name='data',
+        on_delete=models.CASCADE,
     )
 
     measure_unit = models.ForeignKey(
@@ -153,6 +157,7 @@ class SensorData(ValidateOnSaveMixin, models.Model):
         related_name='data',
         null=True,
         blank=True,
+        on_delete=models.CASCADE,
     )
 
     position = models.ForeignKey(
@@ -160,6 +165,7 @@ class SensorData(ValidateOnSaveMixin, models.Model):
         null=True,
         blank=True,
         related_name='data',
+        on_delete=models.CASCADE,
     )
 
     value = models.FloatField(
@@ -205,6 +211,7 @@ class Sensor(ValidateOnSaveMixin, models.Model):
     magnitude = models.ForeignKey(
         'Magnitude',
         related_name='sensors',
+        on_delete=models.CASCADE,
     )
 
     measure_unit = models.ForeignKey(
@@ -212,13 +219,15 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         related_name='sensors',
         null=True,
         blank=True,
+        on_delete=models.CASCADE,
     )
 
     position = models.OneToOneField(
         'Position',
         related_name='sensor',
         null=True,
-        blank=True
+        blank=True,
+        on_delete=models.CASCADE,
     )
 
     endpoint = models.CharField(
@@ -286,6 +295,7 @@ class SensorFusion(models.Model):
         verbose_name=_('Output sensor'),
         help_text=_('Output virtual sensor'),
         limit_choices_to={'is_virtual': True},
+        on_delete=models.CASCADE,
     )
 
     strategy = models.CharField(
@@ -336,7 +346,8 @@ class Actuator(models.Model):
         'Position',
         related_name='actuator',
         null=True,
-        blank=True
+        blank=True,
+        on_delete=models.CASCADE,
     )
 
     endpoint = models.CharField(
@@ -364,12 +375,14 @@ class Actuator(models.Model):
 
     magnitude = models.ForeignKey(
         'Magnitude',
+        on_delete=models.CASCADE,
     )
 
     measure_unit = models.ForeignKey(
         'MeasureUnit',
         null=True,
         blank=True,
+        on_delete=models.CASCADE,
     )
 
     def set_value(self, value):
@@ -414,12 +427,14 @@ class ActuatorData(models.Model):
     actuator = models.ForeignKey(
         'Actuator',
         related_name='data',
+        on_delete=models.CASCADE,
     )
 
     measure_unit = models.ForeignKey(
         'MeasureUnit',
         null=True,
-        blank=True
+        blank=True,
+        on_delete=models.CASCADE,
     )
 
     value = models.FloatField(
@@ -434,7 +449,8 @@ class ActuatorData(models.Model):
     position = models.ForeignKey(
         'Position',
         null=True,
-        blank=True
+        blank=True,
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
@@ -461,12 +477,14 @@ class PID(models.Model):
 
     input = models.ForeignKey(
         Sensor,
-        related_name='pid_controllers'
+        related_name='pid_controllers',
+        on_delete=models.CASCADE,
     )
 
     output = models.ForeignKey(
         Actuator,
-        related_name='pid_controllers'
+        related_name='pid_controllers',
+        on_delete=models.CASCADE,
     )
 
     error = models.FloatField(
@@ -547,6 +565,7 @@ class PID(models.Model):
 class TriggerCondition(ValidateOnSaveMixin, models.Model):
     input = models.ForeignKey(
         Sensor,
+        on_delete=models.CASCADE,
     )
 
     params = JSONField(
@@ -569,6 +588,7 @@ class TriggerCondition(ValidateOnSaveMixin, models.Model):
     trigger = models.ForeignKey(
         'Trigger',
         related_name='conditions',
+        on_delete=models.CASCADE,
     )
 
     def clean(self):
@@ -616,6 +636,7 @@ class TriggerAction(models.Model):
     trigger = models.ForeignKey(
         'Trigger',
         related_name='actions',
+        on_delete=models.CASCADE,
     )
 
     def do_action(self):

@@ -3,20 +3,19 @@ from django.dispatch import receiver
 from iot.models import ActuatorData
 from core.utils.signals import try_signal, disable_for_loaddata
 import json
-from channels import Group as WSGroup
 
 
-@receiver(post_save, sender=ActuatorData)
-@disable_for_loaddata
-@try_signal
-def ws_update(instance, created, **kwargs):
-    if not created:
-        return
-    ws_group = WSGroup('iot')
-    data = json.dumps(dict(
-        type='actuator-data',
-        name=instance.actuator.name,
-        endpoint=instance.actuator.endpoint,
-        value=instance.value,
-    ))
-    ws_group.send(dict(text=data))
+# @receiver(post_save, sender=ActuatorData)
+# @disable_for_loaddata
+# @try_signal
+# def ws_update(instance, created, **kwargs):
+#     if not created:
+#         return
+#     ws_group = WSGroup('iot')
+#     data = json.dumps(dict(
+#         type='actuator-data',
+#         name=instance.actuator.name,
+#         endpoint=instance.actuator.endpoint,
+#         value=instance.value,
+#     ))
+#     ws_group.send(dict(text=data))

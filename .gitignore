@@ -1,4 +1,5 @@
-.idea
+.*
+!.gitignore
 **.py[cod]
 **.sqlite*
 venv*/

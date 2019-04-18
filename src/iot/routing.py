@@ -1,4 +1,3 @@
-from channels.routing import route
 from iot.models import SensorData
 from iot.models import Trigger
 
@@ -28,10 +27,3 @@ def update_trigger(message):
     triggers = Trigger.objects.filter(conditions__input=sensor_data.sensor, active=True)
     for trigger in triggers:
         trigger.try_fire()
-
-
-channel_routing = [
-    route('iot.update_fusion', update_fusion),
-    route('iot.update_pid', update_pid),
-    route('iot.update_trigger', update_trigger),
-]
