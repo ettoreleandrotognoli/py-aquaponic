@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-=======
 from decimal import Decimal
 from pydoc import locate
 
->>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
 import re
 from decimal import Decimal
 from django.apps import apps
@@ -794,24 +791,14 @@ class PID(models.Model):
 
     input = models.ForeignKey(
         Sensor,
-<<<<<<< HEAD
-        on_delete=models.CASCADE,
-        related_name='pid_controllers'
-=======
         related_name='pid_controllers',
         on_delete=models.CASCADE,
->>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
     )
 
     output = models.ForeignKey(
         Actuator,
-<<<<<<< HEAD
-        on_delete=models.CASCADE,
-        related_name='pid_controllers'
-=======
         related_name='pid_controllers',
         on_delete=models.CASCADE,
->>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
     )
 
     error = models.FloatField(
