@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.db.utils import OperationalError
 
 
 class IotConfig(AppConfig):
@@ -17,4 +18,7 @@ class IotConfig(AppConfig):
         from .signals import sensor_data
         from .signals import actuator_data
         from .signals import mqtt_data_source
-        self.start_mqtt_data_sources()
+        try:
+            self.start_mqtt_data_sources()
+        except OperationalError:
+            pass
