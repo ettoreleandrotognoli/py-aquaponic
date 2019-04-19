@@ -4,7 +4,6 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 from core.utils.signals import safe_signal, disable_for_loaddata, thread_signal
-from core.utils.signals import try_signal, disable_for_loaddata
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from iot.models import SensorData

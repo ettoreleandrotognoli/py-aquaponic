@@ -443,7 +443,6 @@ class SensorData(ValidateOnSaveMixin, models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
     )
 
     position = models.ForeignKey(
@@ -514,8 +513,7 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
-    )
+        )
 
     position = models.OneToOneField(
         'Position',
@@ -523,8 +521,7 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
-    )
+        )
 
     is_virtual = models.BooleanField(
         default=False,
@@ -594,7 +591,6 @@ class SensorFusion(models.Model):
         verbose_name=_('Output sensor'),
         help_text=_('Output virtual sensor'),
         limit_choices_to={'is_virtual': True},
-        on_delete=models.CASCADE,
     )
 
     strategy = models.CharField(
@@ -656,8 +652,7 @@ class Actuator(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
-    )
+        )
 
     strategy = models.CharField(
         max_length=255,
@@ -685,7 +680,6 @@ class Actuator(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
     )
 
     def set_value(self, value):
@@ -747,7 +741,6 @@ class ActuatorData(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
     )
 
     value = models.FloatField(
@@ -764,8 +757,7 @@ class ActuatorData(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
-    )
+        )
 
     def __str__(self):
         return '%s (%f)' % (self.actuator.name, self.value)
@@ -903,7 +895,6 @@ class TriggerCondition(ValidateOnSaveMixin, models.Model):
         'Trigger',
         on_delete=models.CASCADE,
         related_name='conditions',
-        on_delete=models.CASCADE,
     )
 
     def clean(self):
@@ -952,7 +943,6 @@ class TriggerAction(models.Model):
         'Trigger',
         on_delete=models.CASCADE,
         related_name='actions',
-        on_delete=models.CASCADE,
     )
 
     def do_action(self):
