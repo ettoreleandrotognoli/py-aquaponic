@@ -145,35 +145,32 @@ class TriggerAdmin(admin.ModelAdmin):
     )
     search_fields = (
         'conditions__input__name',
-<<<<<<< HEAD
-    ]
+    )
 
 
 @admin.register(models.MQTTConnection)
 class MQTTConnection(admin.ModelAdmin):
-    list_display = [
+    list_display = (
         'name',
         'host',
         'username',
-    ]
-    search_fields = [
+    )
+    search_fields = (
         'name',
         'host',
         'username',
-    ]
+    )
 
 
 @admin.register(models.MQTTDataSource)
 class MQTTDataSourceAdmin(admin.ModelAdmin):
-    list_display = [
+    list_display = (
         'connection',
         'strategy',
         'strategy_options',
-    ]
-    list_filter = [
+    )
+    list_filter = (
         'connection',
         'strategy',
-    ]
-=======
     )
->>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
+    
