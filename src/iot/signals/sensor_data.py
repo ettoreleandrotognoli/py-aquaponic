@@ -26,37 +26,37 @@ channel_layer = get_channel_layer()
 #     async_to_sync(channel_layer.group_send)('iot.broadcast', dict(type='sensor_data', text=data))
 
 
-# @receiver(post_save, sender=SensorData)
-# @disable_for_loaddata
-# @thread_signal
-# @safe_signal
-# def update_fusion(instance: SensorData, created, **kwargs):
-#     if not created:
-#         return
-#     consumers = instance.sensor.consumers.all()
-#     for consumer in consumers:
-#         consumer.input_changed(instance)
+@receiver(post_save, sender=SensorData)
+@disable_for_loaddata
+@thread_signal
+@safe_signal
+def update_fusion(instance: SensorData, created, **kwargs):
+    if not created:
+        return
+    consumers = instance.sensor.consumers.all()
+    for consumer in consumers:
+        consumer.input_changed(instance)
 
 
-# @receiver(post_save, sender=SensorData)
-# @disable_for_loaddata
-# @thread_signal
-# @safe_signal
-# def update_pid(instance: SensorData, created, **kwargs):
-#     if not created:
-#         return
-#     pid_controllers = instance.sensor.pid_controllers.filter(active=True)
-#     for pid_controller in pid_controllers:
-#         pid_controller.input_changed(instance)
+@receiver(post_save, sender=SensorData)
+@disable_for_loaddata
+@thread_signal
+@safe_signal
+def update_pid(instance: SensorData, created, **kwargs):
+    if not created:
+        return
+    pid_controllers = instance.sensor.pid_controllers.filter(active=True)
+    for pid_controller in pid_controllers:
+        pid_controller.input_changed(instance)
 
 
-# @receiver(post_save, sender=SensorData)
-# @disable_for_loaddata
-# @thread_signal
-# @safe_signal
-# def update_trigger(instance: SensorData, created, **kwargs):
-#     if not created:
-#         return
-#     triggers = Trigger.objects.filter(conditions__input=instance.sensor, active=True)
-#     for trigger in triggers:
-#         trigger.try_fire()
+@receiver(post_save, sender=SensorData)
+@disable_for_loaddata
+@thread_signal
+@safe_signal
+def update_trigger(instance: SensorData, created, **kwargs):
+    if not created:
+        return
+    triggers = Trigger.objects.filter(conditions__input=instance.sensor, active=True)
+    for trigger in triggers:
+        trigger.try_fire()
