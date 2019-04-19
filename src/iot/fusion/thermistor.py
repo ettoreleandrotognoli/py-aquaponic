@@ -2,14 +2,14 @@ import math
 
 from iot.models import MeasureUnit
 from .electronic import VoltageDivider
-from .merger import Merger
+from .fusion import FusionStrategy
 
 
 def ln(value):
     return math.log(value, math.e)
 
 
-class SteinhartHart(Merger):
+class SteinhartHart(FusionStrategy):
     """
     1/T = a + b*ln(R) + c* (ln(R))³
     """
@@ -41,7 +41,7 @@ class SteinhartHart(Merger):
         return t, sensor_data.time, output_unit
 
 
-class BetaFactor(Merger):
+class BetaFactor(FusionStrategy):
     """
     1/T = 1/T0 + 1/B * ln(R/R0)
     """

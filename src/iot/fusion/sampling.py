@@ -1,7 +1,7 @@
-from .merger import Merger
+from .fusion import FusionStrategy
 
 
-class HighSampling(Merger):
+class HighSampling(FusionStrategy):
     def __init__(self, **kwargs):
         pass
 

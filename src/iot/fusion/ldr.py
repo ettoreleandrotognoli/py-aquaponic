@@ -1,8 +1,8 @@
 from iot.models import MeasureUnit
-from .merger import Merger
+from .fusion import FusionStrategy
 
 
-class Lux(Merger):
+class Lux(FusionStrategy):
     def __init__(self, resistor=10000.0, tension=5.0, ldr_constant=500000.0, light_proportional=True):
         self.resistor = resistor
         self.tension = tension

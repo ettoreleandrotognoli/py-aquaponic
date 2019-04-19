@@ -91,6 +91,18 @@ class SensorFusionAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(models.SensorFilter)
+class SensorFilterAdmin(admin.ModelAdmin):
+    list_display = ('output', 'strategy',)
+    list_filter = (
+        'output__magnitude',
+        'strategy',
+    )
+    search_fields = (
+        'input__name',
+        'output__name',
+    )
+
 @admin.register(models.TriggerCondition)
 class TriggerConditionAdmin(admin.ModelAdmin):
     list_display = (

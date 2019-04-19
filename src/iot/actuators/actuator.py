@@ -1,9 +1,9 @@
-class Actuator(object):
+class ActuatorStrategy(object):
     def set_value(self, value: float) -> float:
         raise NotImplementedError()
 
 
-class ReadableActuator(Actuator):
+class ReadableActuator(ActuatorStrategy):
     def set_value(self, value: float) -> float:
         raise NotImplementedError()
 
@@ -11,7 +11,7 @@ class ReadableActuator(Actuator):
         raise NotImplementedError()
 
 
-class ActuatorTemplate(Actuator):
+class ActuatorTemplate(ActuatorStrategy):
     def prepare_value(self, value):
         return value
 

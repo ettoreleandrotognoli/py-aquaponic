@@ -7,7 +7,14 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from core.utils.models import ValidateOnSaveMixin
 from jsonfield import JSONField
+from iot.actuators import ActuatorStrategy
+from iot.actuators import SUPPORTED_STRATEGIES as ACTUATOR_STRATEGIES
+from iot.fusion import FusionStrategy
+from iot.fusion import SUPPORTED_STRATEGIES as FUSION_STRATEGIES
+from iot.fusion import FilterStrategy
+from iot.fusion import SUPPORTED_FILTERS as FILTER_STRATEGIES
 from pydoc import locate
+
 
 class SensorDataQuerySet(models.QuerySet):
     def time_line(self, begin: datetime, end: datetime, interval: timedelta = timedelta(seconds=60 * 60)):
@@ -34,6 +41,7 @@ class SensorDataQuerySet(models.QuerySet):
 
 class SensorDataManager(BaseManager.from_queryset(SensorDataQuerySet)):
     pass
+
 
 class SensorData(ValidateOnSaveMixin, models.Model):
 
@@ -205,12 +213,11 @@ class SensorFusion(models.Model):
 
     inputs = models.ManyToManyField(
         'Sensor',
-        related_name='consumers',
+        related_name='fusion_consumers',
     )
 
     output = models.OneToOneField(
         'Sensor',
-        related_name='origin',
         on_delete=models.CASCADE,
         verbose_name=_('Output sensor'),
         help_text=_('Output virtual sensor'),
@@ -220,18 +227,7 @@ class SensorFusion(models.Model):
     strategy = models.CharField(
         max_length=255,
         verbose_name=_('Fusion strategy'),
-        choices=(
-            ('iot.fusion.sampling.HighSampling', _('High Sampling')),
-            ('iot.fusion.ldr.Lumen', _('Electric Tension to Lumen using a LDR')),
-            ('iot.fusion.ldr.Lux', _('Electric Tension to Lux using a LDR')),
-            ('iot.fusion.thermistor.SteinhartHart', _(
-                'Temperatude with Steinhart-Hart (NTC Thermistor) ')),
-            ('iot.fusion.thermistor.BetaFactor', _(
-                'Temperatude with Beta Factor (NTC Thermistor) ')),
-            ('iot.fusion.filter.LowPass', _('Low Pass Filter')),
-            ('iot.fusion.filter.HighPass', _('High Pass Filter')),
-        )
-
+        choices=FUSION_STRATEGIES.items()
     )
 
     strategy_options = JSONField(
@@ -240,13 +236,60 @@ class SensorFusion(models.Model):
         default={}
     )
 
+    def load_strategy(self) -> FusionStrategy:
+        fusion_strategy = locate(self.strategy)(**self.strategy_options)
+        return fusion_strategy
+
     def input_changed(self, sensor_data: SensorData):
-        merger = locate(self.strategy)(**self.strategy_options)
+        merger = self.load_strategy()
         value, time, measure_unit = merger.merge(
             self.output, sensor_data, self.inputs.all())
         if value:
             self.output.push_data(value=value, time=time,
                                   measure_unit=measure_unit)
+
+
+class SensorFilterQuerySet(models.QuerySet):
+    pass
+
+
+class SensorFilterManager(BaseManager.from_queryset(SensorFilterQuerySet)):
+    pass
+
+
+class SensorFilter(models.Model):
+
+    objects = SensorFilterManager()
+
+    class Meta:
+        verbose_name = _('Sensor Filter')
+        ordering = ('output__name',)
+
+    strategy = models.CharField(
+        max_length=255,
+        verbose_name=_('Filter strategy'),
+        choices=FILTER_STRATEGIES.items()
+    )
+
+    strategy_options = JSONField(
+        null=True,
+        blank=True,
+        default={}
+    )
+
+    inputs = models.ForeignKey(
+        'Sensor',
+        related_name='filter_consumers',
+        on_delete=models.CASCADE,
+    )
+
+    output = models.OneToOneField(
+        'Sensor',
+        on_delete=models.CASCADE,
+        verbose_name=_('Output sensor'),
+        help_text=_('Output virtual sensor'),
+        limit_choices_to={'is_virtual': True},
+    )
 
 
 class ActuatorQuerySet(models.QuerySet):
@@ -287,13 +330,7 @@ class Actuator(models.Model):
 
     strategy = models.CharField(
         max_length=255,
-        choices=(
-            ('iot.actuators.actuator.NullActuator', _('Null Actuator')),
-            ('iot.actuators.parport.DataPin', _('Parallel Port Pin')),
-            ('iot.actuators.firmata.FirmataPin', _(
-                'Arduino Pin using Firmata Protocol')),
-            ('iot.actuators.mqtt.MqttDevice', _('Mqtt Remote Device')),
-        ),
+        choices=ACTUATOR_STRATEGIES.items()
     )
 
     strategy_options = JSONField(
@@ -314,8 +351,12 @@ class Actuator(models.Model):
         blank=True,
     )
 
+    def load_strategy(self) -> ActuatorStrategy:
+        actuator = locate(self.strategy)(**self.strategy_options)
+        return actuator
+
     def set_value(self, value):
-        device = locate(self.strategy)(**self.strategy_options)
+        device = self.load_strategy()
         data = ActuatorData(
             actuator=self,
             raw=value,

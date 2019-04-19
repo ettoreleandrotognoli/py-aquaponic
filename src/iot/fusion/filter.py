@@ -1,7 +1,11 @@
-from .merger import Merger
+
+class FilterStrategy(object):
+
+    def filter(self):
+        pass
 
 
-class LowPass(Merger):
+class LowPass(FilterStrategy):
     def __init__(self, high=1.0, low=2.0):
         self.high = high
         self.low = low
@@ -10,11 +14,12 @@ class LowPass(Merger):
         last_value = output_sensor.data.order_by('-time').first()
         if not last_value:
             return sensor_data.value, sensor_data.time, sensor_data.measure_unit
-        value = (sensor_data.value * self.high + last_value.value * self.low) / (self.high + self.low)
+        value = (sensor_data.value * self.high + last_value.value *
+                 self.low) / (self.high + self.low)
         return value, sensor_data.time, sensor_data.measure_unit
 
 
-class HighPass(Merger):
+class HighPass(FilterStrategy):
     def __init__(self):
         pass
 
