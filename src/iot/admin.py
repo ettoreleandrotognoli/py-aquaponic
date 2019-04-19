@@ -103,6 +103,20 @@ class SensorFilterAdmin(admin.ModelAdmin):
         'output__name',
     )
 
+
+@admin.register(models.SensorConversion)
+class SensorConversionAdmin(admin.ModelAdmin):
+    list_display = ('output', 'strategy',)
+    list_filter = (
+        'output__magnitude',
+        'strategy',
+    )
+    search_fields = (
+        'input__name',
+        'output__name',
+    )
+
+
 @admin.register(models.TriggerCondition)
 class TriggerConditionAdmin(admin.ModelAdmin):
     list_display = (
@@ -185,4 +199,3 @@ class MQTTDataSourceAdmin(admin.ModelAdmin):
         'connection',
         'strategy',
     )
-    

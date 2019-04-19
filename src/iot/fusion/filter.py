@@ -1,8 +1,5 @@
-
-class FilterStrategy(object):
-
-    def filter(self):
-        pass
+from typing import Iterable
+from . import Sample, FilterStrategy
 
 
 class LowPass(FilterStrategy):
@@ -10,22 +7,19 @@ class LowPass(FilterStrategy):
         self.high = high
         self.low = low
 
-    def merge(self, output_sensor, sensor_data, sensors):
-        last_value = output_sensor.data.order_by('-time').first()
-        if not last_value:
-            return sensor_data.value, sensor_data.time, sensor_data.measure_unit
-        value = (sensor_data.value * self.high + last_value.value *
-                 self.low) / (self.high + self.low)
-        return value, sensor_data.time, sensor_data.measure_unit
+    def sample_size(self):
+        return 1
 
-
-class HighPass(FilterStrategy):
-    def __init__(self):
-        pass
-
-    def merge(self, output_sensor, sensor_data, sensors):
-        last_value = output_sensor.data.order_by('-time').first()
-        if not last_value:
-            return 0, sensor_data.time, sensor_data.measure_unit
-        value = sensor_data.value - last_value.value
-        return value, sensor_data.time, sensor_data.measure_unit
+    def filter(self, result_samples: Iterable[Sample], origin_samples: Iterable[Sample]) -> Sample:
+        last_result = next(iter(result_samples))
+        last_origin = next(iter(origin_samples))
+        if not last_result:
+            return last_origin
+        value = (
+            last_origin.value * self.high +
+            last_result.value * self.low) / (self.high + self.low)
+        return Sample(
+            value=value,
+            timestamp=last_origin.timestamp,
+            measure_unit=last_origin.measure_unit
+        )

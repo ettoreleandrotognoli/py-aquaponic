@@ -1,4 +1,4 @@
-from .io import Sensor, SensorData, SensorFusion, SensorFilter, Actuator, ActuatorData
+from .io import Sensor, SensorData, SensorFusion, SensorFilter, SensorConversion, Actuator, ActuatorData
 from .mqtt import MQTTConnection, MQTTDataSource
 from .control import PID
 from .trigger import Trigger, TriggerAction, TriggerCondition

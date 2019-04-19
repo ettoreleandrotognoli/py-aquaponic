@@ -10,9 +10,11 @@ from jsonfield import JSONField
 from iot.actuators import ActuatorStrategy
 from iot.actuators import SUPPORTED_STRATEGIES as ACTUATOR_STRATEGIES
 from iot.fusion import FusionStrategy
-from iot.fusion import SUPPORTED_STRATEGIES as FUSION_STRATEGIES
+from iot.fusion import SUPPORTED_FUSION_STRATEGIES as FUSION_STRATEGIES
 from iot.fusion import FilterStrategy
-from iot.fusion import SUPPORTED_FILTERS as FILTER_STRATEGIES
+from iot.fusion import SUPPORTED_FILTERS_STRATEGIES as FILTER_STRATEGIES
+from iot.fusion import ConversionStrategy
+from iot.fusion import SUPPORTED_CONVERSION_STRATEGIES as CONVERSION_STRATEGIES
 from pydoc import locate
 
 
@@ -290,6 +292,50 @@ class SensorFilter(models.Model):
         help_text=_('Output virtual sensor'),
         limit_choices_to={'is_virtual': True},
     )
+
+
+class SensorConversionQuerySet(models.QuerySet):
+    pass
+
+
+class SensorConversionManager(BaseManager.from_queryset(SensorConversionQuerySet)):
+    pass
+
+
+class SensorConversion(models.Model):
+
+    objects = SensorConversionManager()
+
+    class Meta:
+        verbose_name = _('Sensor Conversion')
+        ordering = ('output__name',)
+
+    strategy = models.CharField(
+        max_length=255,
+        verbose_name=_('Conversion strategy'),
+        choices=CONVERSION_STRATEGIES.items()
+    )
+
+    strategy_options = JSONField(
+        null=True,
+        blank=True,
+        default={}
+    )
+
+    inputs = models.ForeignKey(
+        'Sensor',
+        related_name='conversion_consumers',
+        on_delete=models.CASCADE,
+    )
+
+    output = models.OneToOneField(
+        'Sensor',
+        on_delete=models.CASCADE,
+        verbose_name=_('Output sensor'),
+        help_text=_('Output virtual sensor'),
+        limit_choices_to={'is_virtual': True},
+    )
+
 
 
 class ActuatorQuerySet(models.QuerySet):
