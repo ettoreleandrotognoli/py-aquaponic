@@ -26,7 +26,6 @@ class SensorListView(ListCreateAPIView):
     serializer_class = SensorSerializer
 
 
-@URL('^sensor/(?P<endpoint>[^/]+)/$', name='sensor-detail')
 @URL('^sensor/(?P<pk>[0-9]+)/$', name='sensor-detail')
 class SensorDetailView(MultipleFieldLookupMixin,
                        TrapDjangoValidationErrorMixin,
@@ -59,13 +58,11 @@ class SensorViewMixin(object):
         serializer.save(sensor=self.sensor)
 
 
-@URL('^sensor-data/(?P<endpoint>[^/]+)/$', name='sensor-data')
 @URL('^sensor-data/(?P<pk>[0-9]+)/$', name='sensor-data')
 class SensorDataView(TrapDjangoValidationErrorMixin, SensorViewMixin, ListCreateAPIView):
     serializer_class = SensorDataSerializer
 
 
-@URL('^sample-sensor-chart/(?P<endpoint>[^/]+)/$', name='sample-sensor-chart')
 @URL('^sample-sensor-chart/(?P<pk>[0-9]+)/$', name='sample-sensor-chart')
 class SampleSensorChartView(PygalViewMixin, SensorViewMixin, ListAPIView):
     chart = pygal.DateTimeLine
@@ -103,7 +100,6 @@ class SensorChartForm(forms.Form):
     )
 
 
-@URL('^data-sensor-chart/(?P<endpoint>[^/]+)/$', name='sensor-chart')
 @URL('^data-sensor-chart/(?P<pk>[0-9]+)/$', name='sensor-chart')
 class SensorChartView(PygalViewMixin, SensorViewMixin, ListAPIView):
     chart = pygal.DateTimeLine

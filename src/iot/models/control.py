@@ -8,7 +8,19 @@ from django.utils.timezone import timedelta
 
 from .io import SensorData, Sensor, Actuator
 
+
+class PIDQuerySet(models.QuerySet):
+    pass
+
+
+class PIDManager(BaseManager.from_queryset(PIDQuerySet)):
+    pass
+
+
 class PID(models.Model):
+
+    objects = PIDManager()
+
     class Meta:
         verbose_name = _('PID')
         ordering = ('-active', 'name',)
