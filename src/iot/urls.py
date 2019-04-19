@@ -1,6 +1,6 @@
-from django.conf.urls import url, include
+from django.urls import include, path
 
 urlpatterns = [
-    url('', include('iot.views', namespace='iot')),
-    url('^api/', include('iot.api', namespace='iot-api')),
+    path('', include(('iot.views','iot-web',), namespace='iot')),
+    path('api/', include(('iot.api','iot-api',), namespace='iot-api')),
 ]

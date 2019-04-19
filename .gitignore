@@ -1,8 +1,11 @@
 .*
 !.gitignore
+<<<<<<< HEAD
 !.env.example
 !.travis.yml
 !.bowerrc
+=======
+>>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
 **.py[cod]
 **.sqlite*
 venv*/

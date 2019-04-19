@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+from decimal import Decimal
+from pydoc import locate
+
+>>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
 import re
 from decimal import Decimal
 from django.apps import apps
@@ -5,6 +11,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.manager import BaseManager
 from django.utils import timezone
 from django.utils.timezone import datetime
 from django.utils.timezone import timedelta
@@ -228,14 +235,25 @@ class MQTTDataSource(models.Model):
         )
 
 
+class MagnitudeQuerySet(models.QuerySet):
+    pass
+
+class MagnitudeManager(BaseManager.from_queryset(MagnitudeQuerySet)):
+    pass
+
 class Magnitude(models.Model):
+
+    objects = MagnitudeManager()
+
     class Meta:
         verbose_name = _('Magnitude')
-        ordering = ['name']
+        ordering = ('name',)
+        unique_together = (
+            ('name',),
+        )
 
     name = models.CharField(
         max_length=255,
-        unique=True,
         verbose_name=_('Name'),
     )
 
@@ -249,10 +267,22 @@ class Magnitude(models.Model):
         return self.name
 
 
+class MeasureUnitQuerySet(models.QuerySet):
+    pass
+
+class MeasureUnitManager(BaseManager.from_queryset(MeasureUnitQuerySet)):
+    pass
+
 class MeasureUnit(models.Model):
+
+    objects = MeasureUnitManager()
+
     class Meta:
         verbose_name = _('Measure Unit')
-        ordering = ['name']
+        ordering = ('name',)
+        unique_together =(
+            ('name',),
+        )
 
     symbol = models.CharField(
         max_length=8,
@@ -289,15 +319,19 @@ class MeasureUnit(models.Model):
 class ConversionFormulaQuerySet(models.QuerySet):
     pass
 
+class ConversionFormulaManager(BaseManager.from_queryset(ConversionFormulaQuerySet)):
+    pass
 
 class ConversionFormula(models.Model):
     DECIMAL_REGEX = re.compile(r'(\d+(.\d+)?)')
+    objects = ConversionFormulaManager()
 
     class Meta:
         verbose_name = _('Conversion Formula')
-        ordering = ['from_unit__name', 'to_unit__name']
-
-    objects = ConversionFormulaQuerySet.as_manager()
+        ordering = ('from_unit__name', 'to_unit__name',)
+        unique_together = (
+            ('from_unit','to_unit',),
+        )
 
     from_unit = models.ForeignKey(
         MeasureUnit,
@@ -329,7 +363,16 @@ class ConversionFormula(models.Model):
         return '%s ->  %s' % tuple(map(str, (self.from_unit, self.to_unit)))
 
 
+class PositionQuerySet(models.QuerySet):
+    pass
+
+class PositionManager(BaseManager.from_queryset(PositionQuerySet)):
+    pass
+
 class Position(models.Model):
+
+    objects = PositionManager()
+
     class Meta:
         verbose_name = _('Position')
 
@@ -348,6 +391,11 @@ class Position(models.Model):
     def __str__(self) -> str:
         return '%f° %f° %f' % (self.latitude, self.longitude, self.altitude)
 
+class SensorDataQuerySet(models.QuerySet):
+    pass
+
+class SensorDataManager(BaseManager.from_queryset(SensorDataQuerySet)):
+    pass
 
 class SensorDataQuerySet(models.QuerySet):
     def time_line(self, begin: datetime, end: datetime, interval: timedelta = timedelta(seconds=60 * 60)):
@@ -373,9 +421,12 @@ class SensorDataQuerySet(models.QuerySet):
 
 
 class SensorData(ValidateOnSaveMixin, models.Model):
+
+    objects = SensorDataManager()
+
     class Meta:
         verbose_name = _('Sensor Data')
-        ordering = ['-time']
+        ordering = ('-time',)
 
     objects = SensorDataQuerySet.as_manager()
 
@@ -395,6 +446,7 @@ class SensorData(ValidateOnSaveMixin, models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        on_delete=models.CASCADE,
     )
 
     position = models.ForeignKey(
@@ -427,10 +479,19 @@ class SensorData(ValidateOnSaveMixin, models.Model):
         return '%s %s' % tuple(map(str, (self.value, self.measure_unit if self.measure_unit_id else '?')))
 
 
+class SensorQuerySet(models.QuerySet):
+    pass
+
+class SensorManager(BaseManager.from_queryset(SensorQuerySet)):
+    pass
+
 class Sensor(ValidateOnSaveMixin, models.Model):
+
+    objects = SensorManager()
+
     class Meta:
         verbose_name = _('Sensor')
-        ordering = ['name']
+        ordering = ('name',)
 
     name = models.CharField(
         max_length=255,
@@ -456,6 +517,7 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        on_delete=models.CASCADE,
     )
 
     position = models.OneToOneField(
@@ -463,14 +525,8 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         related_name='sensor',
         on_delete=models.CASCADE,
         null=True,
-        blank=True
-    )
-
-    endpoint = models.CharField(
-        max_length=255,
-        unique=True,
-        default=unique,
         blank=True,
+        on_delete=models.CASCADE,
     )
 
     is_virtual = models.BooleanField(
@@ -515,10 +571,19 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         return '%s (%s)' % (self.name, self.magnitude.name)
 
 
+class SensorFusionQuerySet(models.QuerySet):
+    pass
+
+class SensorFusionManager(BaseManager.from_queryset(SensorDataQuerySet)):
+    pass
+
 class SensorFusion(models.Model):
+
+    objects =SensorFusionManager()
+
     class Meta:
         verbose_name = _('Sensor Fusion')
-        ordering = ['output__name']
+        ordering = ('output__name',)
 
     inputs = models.ManyToManyField(
         'Sensor',
@@ -532,6 +597,7 @@ class SensorFusion(models.Model):
         verbose_name=_('Output sensor'),
         help_text=_('Output virtual sensor'),
         limit_choices_to={'is_virtual': True},
+        on_delete=models.CASCADE,
     )
 
     strategy = models.CharField(
@@ -561,8 +627,16 @@ class SensorFusion(models.Model):
         if value:
             self.output.push_data(value=value, time=time, measure_unit=measure_unit)
 
+class ActuatorQuerySet(models.QuerySet):
+    pass
+
+class ActuatorManager(BaseManager.from_queryset(ActuatorQuerySet)):
+    pass
 
 class Actuator(models.Model):
+
+    objects = ActuatorManager()
+
     class Meta:
         verbose_name = _('Actuator')
         ordering = ['name']
@@ -584,14 +658,8 @@ class Actuator(models.Model):
         related_name='actuator',
         on_delete=models.CASCADE,
         null=True,
-        blank=True
-    )
-
-    endpoint = models.CharField(
-        max_length=255,
-        unique=True,
-        default=unique,
         blank=True,
+        on_delete=models.CASCADE,
     )
 
     strategy = models.CharField(
@@ -620,6 +688,7 @@ class Actuator(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        on_delete=models.CASCADE,
     )
 
     def set_value(self, value):
@@ -652,10 +721,19 @@ class Actuator(models.Model):
         return self.name
 
 
+class ActuatorDataQuerySet(models.QuerySet):
+    pass
+
+class ActuatorDataManager(BaseManager.from_queryset(ActuatorDataQuerySet)):
+    pass
+
 class ActuatorData(models.Model):
+
+    objects = ActuatorDataManager()
+
     class Meta:
         verbose_name = _('Actuator Data')
-        ordering = ['-time']
+        ordering = ('-time',)
 
     time = models.DateTimeField(
         default=timezone.now
@@ -671,7 +749,8 @@ class ActuatorData(models.Model):
         'MeasureUnit',
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
+        on_delete=models.CASCADE,
     )
 
     value = models.FloatField(
@@ -687,7 +766,8 @@ class ActuatorData(models.Model):
         'Position',
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
@@ -697,7 +777,7 @@ class ActuatorData(models.Model):
 class PID(models.Model):
     class Meta:
         verbose_name = _('PID')
-        ordering = ['-active', 'name']
+        ordering = ('-active', 'name',)
 
     name = models.CharField(
         max_length=255,
@@ -714,14 +794,24 @@ class PID(models.Model):
 
     input = models.ForeignKey(
         Sensor,
+<<<<<<< HEAD
         on_delete=models.CASCADE,
         related_name='pid_controllers'
+=======
+        related_name='pid_controllers',
+        on_delete=models.CASCADE,
+>>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
     )
 
     output = models.ForeignKey(
         Actuator,
+<<<<<<< HEAD
         on_delete=models.CASCADE,
         related_name='pid_controllers'
+=======
+        related_name='pid_controllers',
+        on_delete=models.CASCADE,
+>>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
     )
 
     error = models.FloatField(
@@ -826,6 +916,7 @@ class TriggerCondition(ValidateOnSaveMixin, models.Model):
         'Trigger',
         on_delete=models.CASCADE,
         related_name='conditions',
+        on_delete=models.CASCADE,
     )
 
     def clean(self):
@@ -848,7 +939,7 @@ class TriggerCondition(ValidateOnSaveMixin, models.Model):
         else:
             params = dict(p=params)
         params.update(dict(s=sensor_value))
-        return eval(self.check_script, globals(), params)
+        return eval(self.check_script, {}, params)
 
 
 class TriggerAction(models.Model):
@@ -874,13 +965,23 @@ class TriggerAction(models.Model):
         'Trigger',
         on_delete=models.CASCADE,
         related_name='actions',
+        on_delete=models.CASCADE,
     )
 
     def do_action(self):
         self.output.value = self.output_value
 
 
+class TriggerQuerySet(models.QuerySet):
+    pass
+
+class TriggerManager(BaseManager.from_queryset(TriggerQuerySet)):
+    pass
+
 class Trigger(models.Model):
+
+    objects = TriggerManager()
+
     active = models.BooleanField(
         default=True,
     )

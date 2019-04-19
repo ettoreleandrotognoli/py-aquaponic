@@ -1,6 +1,3 @@
-# -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 import operator
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q

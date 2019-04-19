@@ -1,4 +1,6 @@
 import json
+from iot.models import SensorData
+from iot.models import Trigger
 
 from channels.consumer import AsyncConsumer
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
@@ -27,3 +29,11 @@ class IoTWebSocketConsumer(AsyncJsonWebsocketConsumer):
 
     async def actuator_data(self, message):
         await self.send(message['text'])
+        
+def update_trigger(message):
+    sensor_data = SensorData.objects.filter(
+        pk=message.content['sensor_data_pk']
+    ).select_related('sensor').get()
+    triggers = Trigger.objects.filter(conditions__input=sensor_data.sensor, active=True)
+    for trigger in triggers:
+        trigger.try_fire()

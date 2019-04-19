@@ -11,7 +11,11 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+<<<<<<< HEAD
 import sys
+=======
+from decouple import config
+>>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
 
 import dj_database_url
 from decouple import config
@@ -31,13 +35,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+<<<<<<< HEAD
 SECRET_KEY = config('SECRET_KEY', 'upmxof7pp2h78tbtp9e3=q5#-%_7#rf@1!f#1r7&o#wieketxr')
+=======
+SECRET_KEY = config(
+    'SECRET_KEY', 'upmxof7pp2h78tbtp9e3=q5#-%_7#rf@1!f#1r7&o#wieketxr'
+)
+>>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', True, cast=bool)
 
+<<<<<<< HEAD
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
+=======
+>>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
 SECURE_SSL_REDIRECT = config('SSL', False, cast=bool)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -177,9 +190,15 @@ CHANNEL_LAYERS = {
 }
 
 if config('REDIS_URL', False):
+<<<<<<< HEAD
     CHANNEL_LAYERS['default']['BACKEND'] = 'channels_redis.core.RedisChannelLayer'
     CHANNEL_LAYERS['default']['CONFIG'] = {
         'hosts': config('REDIS_URL', cast=lambda v: [v.strip() for v in v.split(',')])
+=======
+    CHANNEL_LAYERS['default']['BACKEND'] = 'asgi_redis.RedisChannelLayer'
+    CHANNEL_LAYERS['default']['CONFIG'] = {
+        'hosts': [config('REDIS_URL')]
+>>>>>>> 6101720d5b73be9a3257384bf71dee7668701676
     }
 elif not DEBUG:
     CHANNEL_LAYERS['default']['BACKEND'] = 'asgi_ipc.IPCChannelLayer'
