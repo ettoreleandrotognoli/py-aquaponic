@@ -1,4 +1,5 @@
 from __future__ import annotations
+from django.core.cache import cache
 from dataclasses import asdict
 from django.forms.models import model_to_dict
 import django.dispatch
@@ -111,7 +112,8 @@ class SensorData(ValidateOnSaveMixin, models.Model):
     @classmethod
     def from_sample(cls, sample: Sample) -> SensorData:
         return cls(
-            position=Position.from_tuple(sample.position) if sample.position else None,
+            position=Position.from_tuple(
+                sample.position) if sample.position else None,
             value=sample.value,
             timestamp=sample.timestamp,
             measure_unit=sample.measure_unit,
@@ -184,14 +186,29 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         verbose_name=_('It is a virtual sensor')
     )
 
+    @property
+    def cache_key(self):
+        return 'sensor-{}'.format(self.pk)
+
     def set_value(self, value):
         self.push_data(value=value)
 
     def get_value(self):
+        sample = self.get_last_data()
+        return sample.value if sample else None
+
+    def get_last_data(self) -> SensorData:
+        last_sample = cache.get(self.cache_key)
+        if last_sample:
+            return last_sample
         last_data = self.data.order_by('-timestamp').first()
-        if not last_data:
-            return None
-        return last_data.value
+        if last_data:
+            return last_data
+
+    def set_last_data(self, data: SensorData):
+        cache.set(self.cache_key, data)
+        data_arrived.send_robust(sender=self.__class__, data=data)
+        data.save()
 
     value = property(get_value, set_value)
 
@@ -218,9 +235,7 @@ class Sensor(ValidateOnSaveMixin, models.Model):
 
     def push_data(self, **kwargs) -> SensorData:
         data = self.init_data(**kwargs)
-        data_arrived.send_robust(sender=self.__class__, data=data,)
-        data.save()
-        return data
+        return self.set_last_data(data)
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.magnitude.name)
