@@ -1,9 +1,11 @@
-from .fusion import FusionStrategy
+from . import Sample
+from typing import Sequence
+from . import FusionStrategy
 
 
 class HighSampling(FusionStrategy):
     def __init__(self, **kwargs):
         pass
 
-    def merge(self, output_sensor, sensor_data, sensors):
-        return sensor_data.value, sensor_data.time, sensor_data.measure_unit
+    def merge(self, result_sample: Sample, origin_sample: Sample, others_sample: Sequence[Sample] ) -> Sample:
+        return origin_sample

@@ -1,3 +1,5 @@
+from __future__ import annotations
+import django.dispatch
 from django.db import models
 from django.db.models.manager import BaseManager
 from django.utils.translation import ugettext
@@ -16,6 +18,9 @@ from iot.fusion import SUPPORTED_FILTERS_STRATEGIES as FILTER_STRATEGIES
 from iot.fusion import ConversionStrategy
 from iot.fusion import SUPPORTED_CONVERSION_STRATEGIES as CONVERSION_STRATEGIES
 from pydoc import locate
+from iot.fusion import Sample
+
+data_arrived = django.dispatch.Signal(providing_args=['data'])
 
 
 class SensorDataQuerySet(models.QuerySet):
@@ -99,6 +104,23 @@ class SensorData(ValidateOnSaveMixin, models.Model):
                 'measure unit magnitude and sensor magnitude are different')
             raise ValidationError({'measure_unit': error_message})
         return super(SensorData, self).clean()
+
+    @classmethod
+    def from_sample(cls, sample: Sample) -> SensorData:
+        cls(
+            position=Position.from_tuple(sample.position),
+            value=sample.value,
+            time=sample.timestamp,
+            measure_unit=sample.measure_unit,
+        )
+
+    def as_sample(self) -> Sample:
+        return Sample(
+            position=self.position.as_tuple(),
+            value=self.value,
+            timestamp=self.time,
+            measure_unit=self.measure_unit,
+        )
 
     def __str__(self):
         return '%s %s' % tuple(map(str, (self.value, self.measure_unit if self.measure_unit_id else '?')))
@@ -190,6 +212,7 @@ class Sensor(ValidateOnSaveMixin, models.Model):
 
     def push_data(self, **kwargs) -> SensorData:
         data = self.init_data(**kwargs)
+        data_arrived.send_robust(sender=self.__class__, data=data,)
         data.save()
         return data
 
@@ -244,6 +267,7 @@ class SensorFusion(models.Model):
 
     def input_changed(self, sensor_data: SensorData):
         merger = self.load_strategy()
+
         value, time, measure_unit = merger.merge(
             self.output, sensor_data, self.inputs.all())
         if value:
@@ -335,7 +359,6 @@ class SensorConversion(models.Model):
         help_text=_('Output virtual sensor'),
         limit_choices_to={'is_virtual': True},
     )
-
 
 
 class ActuatorQuerySet(models.QuerySet):

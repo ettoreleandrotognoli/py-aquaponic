@@ -1,5 +1,6 @@
 from typing import TypeVar
 from typing import Tuple
+from typing import Sequence
 from typing import Generic
 from typing import Any
 from typing import Iterable
@@ -47,5 +48,5 @@ class FilterStrategy(object):
 
 
 class FusionStrategy(object):
-    def merge(self) -> Any:
+    def merge(self, result_sample: Sample, origin_sample: Sample, others_sample: Sequence[Sample] ) -> Sample:
         raise NotImplementedError()
