@@ -26,7 +26,8 @@ class Lux(ConversionStrategy):
         return Sample(
             timestamp=sample.timestamp,
             value=lux,
-            measure_unit=self.lux_unit
+            measure_unit=self.lux_unit,
+            position=sample.position,
         )
 
 
@@ -42,5 +43,6 @@ class Lumen(Lux):
         return Sample(
             timestamp=sample.timestamp,
             value=lumen,
-            measure_unit=self.lumen_unit
+            measure_unit=self.lumen_unit,
+            position=sample.position,
         )

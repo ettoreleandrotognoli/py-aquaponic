@@ -1,4 +1,5 @@
 from typing import TypeVar
+from typing import Tuple
 from typing import Generic
 from typing import Any
 from typing import Iterable
@@ -26,6 +27,7 @@ E = TypeVar('E')
 
 class Sample(Generic[E]):
     timestamp: datetime
+    position: Tuple[float, float, float]
     value: E
     measure_unit: Any
 
@@ -42,7 +44,6 @@ class FilterStrategy(object):
 
     def filter(self, result_samples: Iterable[Sample], origin_samples: Iterable[Sample]) -> Sample:
         raise NotImplementedError()
-
 
 
 class FusionStrategy(object):

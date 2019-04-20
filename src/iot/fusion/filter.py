@@ -21,5 +21,6 @@ class LowPass(FilterStrategy):
         return Sample(
             value=value,
             timestamp=last_origin.timestamp,
-            measure_unit=last_origin.measure_unit
+            measure_unit=last_origin.measure_unit,
+            position=last_origin.position,
         )
