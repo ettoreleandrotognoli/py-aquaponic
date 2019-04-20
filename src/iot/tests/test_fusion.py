@@ -3,6 +3,7 @@ from iot.fusion.electronic import VoltageDivider
 from iot.fusion.thermistor import BetaFactor
 from iot.fusion.thermistor import SteinhartHart
 from iot.models import SensorData, MeasureUnit
+from iot.fusion import Sample
 
 
 class TestVoltageDivider(TestCase):
@@ -37,17 +38,16 @@ class TestSteinhartHart(TestCase):
             resistor=resistor,
             tension=tension,
             proportional=True,
-            output='celsius',
             a=0.0011303,
             b=0.0002339,
             c=0.00000008863,
         )
-        result, time, unit = steinhart_hart.merge(None, SensorData(
+        sample = steinhart_hart.convert(Sample(
             value=vo,
             measure_unit=self.volt,
-        ), [])
-        self.assertEqual(unit.name, 'celsius')
-        self.assertAlmostEqual(25, result, delta=0.1)
+        ))
+        self.assertAlmostEqual(sample.value, 298.15, delta=0.05)
+        self.assertEqual(sample.measure_unit.name, 'kelvin')
 
 
 class TestBetaFactor(TestCase):
@@ -71,14 +71,13 @@ class TestBetaFactor(TestCase):
             resistor=resistor,
             tension=tension,
             proportional=True,
-            output='celsius',
             b=3950.0,
             r=thermistor,
             t=298.15,
         )
-        result, time, unit = beta_factor.merge(None, SensorData(
+        sample = beta_factor.convert(Sample(
             value=vo,
-            measure_unit=self.volt,
-        ), [])
-        self.assertEqual(unit.name, 'celsius')
-        self.assertAlmostEqual(25, result, delta=0.1)
+            measure_unit=self.volt
+        ))
+        self.assertAlmostEqual(sample.value, 298.15, delta=0.05)
+        self.assertEqual(sample.measure_unit.name, 'kelvin')
