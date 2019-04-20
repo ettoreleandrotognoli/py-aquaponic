@@ -288,13 +288,15 @@ class SensorFusion(models.Model):
 
     def input_changed(self, sensor_data: SensorData):
         merger = self.load_strategy()
-
-        value, time, measure_unit = merger.merge(
-            self.output, sensor_data, self.inputs.all())
-        if value:
-            self.output.push_data(value=value, time=time,
-                                  measure_unit=measure_unit)
-
+        last_result = self.output.get_last_data()
+        sample = merger.merge(
+            last_result.as_sample() if last_result else None,
+            sensor_data.as_sample(),
+            list([sensor.get_last_data().as_sample() for sensor in self.inputs.all()])
+        )
+        if not sample:
+            return
+        self.output.push_sample(sample)
 
 class SensorFilterQuerySet(models.QuerySet):
     pass
