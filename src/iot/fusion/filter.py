@@ -11,9 +11,10 @@ class LowPass(FilterStrategy):
         return 1
 
     def filter(self, result_samples: Iterable[Sample], origin_samples: Iterable[Sample]) -> Sample:
-        last_result = next(iter(result_samples))
         last_origin = next(iter(origin_samples))
-        if not last_result:
+        try:
+            last_result = next(iter(result_samples))
+        except StopIteration:
             return last_origin
         value = (
             last_origin.value * self.high +

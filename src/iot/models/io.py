@@ -1,4 +1,6 @@
 from __future__ import annotations
+from dataclasses import asdict
+from django.forms.models import model_to_dict
 import django.dispatch
 from django.db import models
 from django.db.models.manager import BaseManager
@@ -19,6 +21,7 @@ from iot.fusion import ConversionStrategy
 from iot.fusion import SUPPORTED_CONVERSION_STRATEGIES as CONVERSION_STRATEGIES
 from pydoc import locate
 from iot.fusion import Sample
+from iot.models.geo import Position
 
 data_arrived = django.dispatch.Signal(providing_args=['data'])
 
@@ -31,8 +34,8 @@ class SensorDataQuerySet(models.QuerySet):
         while current < end:
             next_current = current + interval
             yield self.all().filter(
-                time__gte=current,
-                time__lt=next_current,
+                timestamp__gte=current,
+                timestamp__lt=next_current,
             )
             current = next_current
 
@@ -41,8 +44,8 @@ class SensorDataQuerySet(models.QuerySet):
             models.Avg('value'),
             models.Min('value'),
             models.Max('value'),
-            models.Max('time'),
-            models.Min('time'),
+            models.Max('timestamp'),
+            models.Min('timestamp'),
         )
 
 
@@ -56,11 +59,11 @@ class SensorData(ValidateOnSaveMixin, models.Model):
 
     class Meta:
         verbose_name = _('Sensor Data')
-        ordering = ('-time',)
+        ordering = ('-timestamp',)
 
     objects = SensorDataQuerySet.as_manager()
 
-    time = models.DateTimeField(
+    timestamp = models.DateTimeField(
         default=timezone.now
     )
 
@@ -107,18 +110,18 @@ class SensorData(ValidateOnSaveMixin, models.Model):
 
     @classmethod
     def from_sample(cls, sample: Sample) -> SensorData:
-        cls(
-            position=Position.from_tuple(sample.position),
+        return cls(
+            position=Position.from_tuple(sample.position) if sample.position else None,
             value=sample.value,
-            time=sample.timestamp,
+            timestamp=sample.timestamp,
             measure_unit=sample.measure_unit,
         )
 
     def as_sample(self) -> Sample:
         return Sample(
-            position=self.position.as_tuple(),
+            position=self.position.as_tuple() if self.position else None,
             value=self.value,
-            timestamp=self.time,
+            timestamp=self.timestamp,
             measure_unit=self.measure_unit,
         )
 
@@ -185,7 +188,7 @@ class Sensor(ValidateOnSaveMixin, models.Model):
         self.push_data(value=value)
 
     def get_value(self):
-        last_data = self.data.order_by('-time').first()
+        last_data = self.data.order_by('-timestamp').first()
         if not last_data:
             return None
         return last_data.value
@@ -204,11 +207,14 @@ class Sensor(ValidateOnSaveMixin, models.Model):
 
     def init_data(self, **kwargs) -> SensorData:
         kwargs['sensor'] = self
-        kwargs['time'] = kwargs.get('time', timezone.now())
+        kwargs['timestamp'] = kwargs.get('timestamp', timezone.now())
         kwargs['position'] = kwargs.get('position', self.position)
         kwargs['measure_unit'] = kwargs.get('measure_unit', self.measure_unit)
         data = SensorData(**kwargs)
         return data
+
+    def push_sample(self, sample: Sample):
+        self.push_data(**asdict(sample))
 
     def push_data(self, **kwargs) -> SensorData:
         data = self.init_data(**kwargs)
@@ -303,7 +309,7 @@ class SensorFilter(models.Model):
         default={}
     )
 
-    inputs = models.ForeignKey(
+    input = models.ForeignKey(
         'Sensor',
         related_name='filter_consumers',
         on_delete=models.CASCADE,
@@ -316,6 +322,19 @@ class SensorFilter(models.Model):
         help_text=_('Output virtual sensor'),
         limit_choices_to={'is_virtual': True},
     )
+
+    def load_strategy(self) -> FilterStrategy:
+        filter_strategy = locate(self.strategy)(**self.strategy_options)
+        return filter_strategy
+
+    def input_changed(self, data: SensorData):
+        filter_strategy = self.load_strategy()
+        sample_size = filter_strategy.sample_size()
+        result = filter_strategy.filter(
+            map(SensorData.as_sample, self.output.data.all()[:sample_size]),
+            map(SensorData.as_sample, self.input.data.all()[:sample_size]),
+        )
+        self.output.push_sample(result)
 
 
 class SensorConversionQuerySet(models.QuerySet):
@@ -442,7 +461,7 @@ class Actuator(models.Model):
                 return device.get_value()
             except NotImplementedError:
                 pass
-        data = self.data.all().order_by('-time').first()
+        data = self.data.all().order_by('-timestamp').first()
         if data:
             return data.value
         else:
@@ -468,9 +487,9 @@ class ActuatorData(models.Model):
 
     class Meta:
         verbose_name = _('Actuator Data')
-        ordering = ('-time',)
+        ordering = ('-timestamp',)
 
-    time = models.DateTimeField(
+    timestamp = models.DateTimeField(
         default=timezone.now
     )
 

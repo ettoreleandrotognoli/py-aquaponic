@@ -119,8 +119,8 @@ class PID(models.Model):
     def input_changed(self, sensor_data: SensorData):
         last = self.input.data.exclude(
             pk=sensor_data.pk
-        ).order_by('-time').first()
-        interval = sensor_data.time - last.time if last else timedelta(seconds=0)
+        ).order_by('-timestamp').first()
+        interval = sensor_data.timestamp - last.timestamp if last else timedelta(seconds=0)
         self.update(sensor_data.value, interval)
 
     def __str__(self):

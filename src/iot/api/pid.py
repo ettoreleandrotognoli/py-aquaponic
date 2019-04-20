@@ -21,10 +21,8 @@ class PIDListView(ListCreateAPIView):
 
 
 @URL('^pid/(?P<pk>[0-9]+)/$', name='pid-detail')
-class PIDDetailView(MultipleFieldLookupMixin,
-                    TrapDjangoValidationErrorMixin,
+class PIDDetailView(TrapDjangoValidationErrorMixin,
                     RetrieveUpdateDestroyAPIView):
-    lookup_field = ('pk', 'endpoint',)
     queryset = PID.objects.all()
     serializer_class = PIDSerializer
 
@@ -70,11 +68,11 @@ class PIDChartView(PygalViewMixin, PIDViewMixin, ListAPIView):
         chart.title = self.pid.name
         chart.add(
             self.pid.input.measure_unit.symbol if self.pid.input.measure_unit else '?',
-            [(sample.time, sample.value) for sample in input_data],
+            [(sample.timestamp, sample.value) for sample in input_data],
         )
         chart.add(
             self.pid.output.measure_unit.symbol if self.pid.output.measure_unit else '?',
-            [(sample.time, sample.value) for sample in output_data],
+            [(sample.timestamp, sample.value) for sample in output_data],
             secondary=True
         )
         return chart.render_django_response()

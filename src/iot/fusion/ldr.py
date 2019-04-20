@@ -24,7 +24,7 @@ class Lux(ConversionStrategy):
                 (value * self.resistor)
             )
         return Sample(
-            timestamp=sample.timestamp,
+            timestamp=sample.timestampstamp,
             value=lux,
             measure_unit=self.lux_unit,
             position=sample.position,
@@ -41,7 +41,7 @@ class Lumen(Lux):
         lux_sample = super().convert(sample)
         lumen = lux_sample.value * self.ldr_area
         return Sample(
-            timestamp=sample.timestamp,
+            timestamp=sample.timestampstamp,
             value=lumen,
             measure_unit=self.lumen_unit,
             position=sample.position,

@@ -70,6 +70,6 @@ class ActuatorChartView(PygalViewMixin, ActuatorViewMixin, ListAPIView):
         chart.title = self.actuator.name
         chart.add(
             self.actuator.measure_unit.symbol if self.actuator.measure_unit else '?',
-            [(sample.time, sample.value) for sample in result],
+            [(sample.timestamp, sample.value) for sample in result],
         )
         return chart.render_django_response()

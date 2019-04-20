@@ -24,7 +24,7 @@ class SensorAdmin(admin.ModelAdmin):
 
 @admin.register(models.SensorData)
 class SensorDataAdmin(admin.ModelAdmin):
-    list_display = ('time', 'value', 'sensor', 'measure_unit',)
+    list_display = ('timestamp', 'value', 'sensor', 'measure_unit',)
     list_filter = ('sensor', 'measure_unit',)
 
 
@@ -58,7 +58,7 @@ class ActuatorAdmin(admin.ModelAdmin):
 
 @admin.register(models.ActuatorData)
 class ActuatorDataAdmin(admin.ModelAdmin):
-    list_display = ('time', 'actuator', 'value',)
+    list_display = ('timestamp', 'actuator', 'value',)
     list_filter = ('actuator',)
     search_fields = (
         'actuator__name',

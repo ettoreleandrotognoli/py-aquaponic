@@ -79,7 +79,7 @@ class SampleSensorChartView(PygalViewMixin, SensorViewMixin, ListAPIView):
         chart.title = self.sensor.name
         chart.add(
             self.sensor.measure_unit.symbol if self.sensor.measure_unit else '?',
-            [(sample.time, sample.value) for sample in result],
+            [(sample.timestamp, sample.value) for sample in result],
         )
         return chart.render_django_response()
 
@@ -113,12 +113,12 @@ class SensorChartView(PygalViewMixin, SensorViewMixin, ListAPIView):
     def list(self, request, *args, **kwargs):
         form = SensorChartForm(data=request.GET)
         filter_data = {
-            'begin': timezone.now() - timezone.timedelta(days=1),
+            'begin': timezone.now() - timezone.timestampdelta(days=1),
             'end': timezone.now()
         }
         if form.is_valid():
             filter_data.update(filter(lambda kv: kv[1], form.clean().items()))
-        result = self.get_queryset().time_line(**filter_data)
+        result = self.get_queryset().timestamp_line(**filter_data)
         chart = self.get_chart()
         chart.title = self.sensor.name
         symbol = self.sensor.measure_unit.symbol if self.sensor.measure_unit else '?'
@@ -126,7 +126,7 @@ class SensorChartView(PygalViewMixin, SensorViewMixin, ListAPIView):
         values = {}
         for r in result:
             j = r.join()
-            times.append(j['time__min'])
+            times.append(j['timestamp__min'])
             for k, v in j.items():
                 if not k.startswith('value__'):
                     continue

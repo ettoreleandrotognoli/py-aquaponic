@@ -1,4 +1,5 @@
 from typing import TypeVar
+from dataclasses import dataclass
 from typing import Tuple
 from typing import Sequence
 from typing import Generic
@@ -26,11 +27,12 @@ SUPPORTED_CONVERSION_STRATEGIES = {
 E = TypeVar('E')
 
 
+@dataclass
 class Sample(Generic[E]):
-    timestamp: datetime
-    position: Tuple[float, float, float]
-    value: E
-    measure_unit: Any
+    timestamp: datetime = None
+    position: Tuple[float, float, float] = None
+    value: E = None
+    measure_unit: Any = None
 
 
 class ConversionStrategy():
